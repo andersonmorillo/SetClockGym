@@ -1,8 +1,8 @@
 import { useEffect } from 'react'
 
 /**
- * Keeps the screen awake while `enabled` is true (iPhone Safari 16.4+).
- * Background beeps after lock are not reliable on iOS web; wake lock is the practical fix.
+ * Keeps the screen awake while `enabled` is true (iOS Safari / Brave 16.4+).
+ * Pairs with HTML audio keep-alive for background media on Brave/Android.
  */
 export function useWakeLock(enabled: boolean) {
   useEffect(() => {

@@ -1,4 +1,5 @@
 import { useEffect, useRef, useState } from 'react'
+import type { ActiveTimerSnapshot } from '../data/activeSession'
 import type { TimerPhase, WorkoutExercise, WorkoutSettings } from '../types'
 import { playBeep } from '../utils/beep'
 import {
@@ -16,6 +17,9 @@ type UseWorkoutTimerArgs = {
   exercises: WorkoutExercise[]
   settings: WorkoutSettings
   onComplete: (feedback: SessionFeedback) => void
+  /** When set, resume from this snapshot and start paused. */
+  restore?: ActiveTimerSnapshot | null
+  onSnapshot?: (snapshot: ActiveTimerSnapshot) => void
 }
 
 type TimerState = {
@@ -24,6 +28,20 @@ type TimerState = {
   series: number
   round: number
   secondsLeft: number
+}
+
+function clampTimerState(
+  state: TimerState,
+  exercises: WorkoutExercise[],
+): TimerState {
+  const maxIndex = Math.max(0, exercises.length - 1)
+  return {
+    phase: state.phase,
+    exerciseIndex: Math.min(Math.max(0, state.exerciseIndex), maxIndex),
+    series: Math.max(1, state.series),
+    round: Math.max(1, state.round),
+    secondsLeft: Math.max(0, state.secondsLeft),
+  }
 }
 
 function workSecondsFor(
@@ -284,17 +302,40 @@ export function useWorkoutTimer({
   exercises,
   settings,
   onComplete,
+  restore = null,
+  onSnapshot,
 }: UseWorkoutTimerArgs) {
-  const [state, setState] = useState<TimerState>(() =>
-    initialTimerState(exercises, settings),
-  )
-  const [running, setRunning] = useState(true)
-  const [sessionFeedback, setSessionFeedback] = useState<SessionFeedback>(() =>
-    emptyPlannedFeedback(exercises, settings),
-  )
+  const restored = Boolean(restore)
+  const [state, setState] = useState<TimerState>(() => {
+    if (restore) {
+      return clampTimerState(
+        {
+          phase: restore.phase,
+          exerciseIndex: restore.exerciseIndex,
+          series: restore.series,
+          round: restore.round,
+          secondsLeft: restore.secondsLeft,
+        },
+        exercises,
+      )
+    }
+    return initialTimerState(exercises, settings)
+  })
+  const [running, setRunning] = useState(!restored)
+  const [sessionFeedback, setSessionFeedback] = useState<SessionFeedback>(() => {
+    if (restore?.savedFeedback?.length) {
+      return buildSessionFeedback(
+        restore.savedFeedback,
+        plannedSeriesTotal(exercises, settings),
+      )
+    }
+    return emptyPlannedFeedback(exercises, settings)
+  })
 
   const onCompleteRef = useRef(onComplete)
   onCompleteRef.current = onComplete
+  const onSnapshotRef = useRef(onSnapshot)
+  onSnapshotRef.current = onSnapshot
   const lastTickBeepRef = useRef<number | null>(null)
   const prevSeriesCueRef = useRef<{
     primed: boolean
@@ -303,15 +344,19 @@ export function useWorkoutTimer({
     exerciseIndex: number
     round: number
   }>({
-    primed: false,
+    primed: restored,
     phase: state.phase,
     series: state.series,
     exerciseIndex: state.exerciseIndex,
     round: state.round,
   })
 
-  const draftRef = useRef<ExerciseDraft | null>(null)
-  const savedRef = useRef<ExerciseFeedback[]>([])
+  const draftRef = useRef<ExerciseDraft | null>(
+    restore?.currentDraft ? { ...restore.currentDraft } : null,
+  )
+  const savedRef = useRef<ExerciseFeedback[]>(
+    restore?.savedFeedback ? [...restore.savedFeedback] : [],
+  )
   const pauseStartedAtRef = useRef<number | null>(null)
   const completingRef = useRef(false)
   const exercisesRef = useRef(exercises)
@@ -319,7 +364,9 @@ export function useWorkoutTimer({
   const settingsRef = useRef(settings)
   settingsRef.current = settings
   const currentInstanceIdRef = useRef(
-    exercises[0]?.instanceId ?? '',
+    exercises[state.exerciseIndex]?.instanceId ??
+      exercises[0]?.instanceId ??
+      '',
   )
 
   // Keep exerciseIndex aligned when the list is reordered mid-session.
@@ -511,12 +558,16 @@ export function useWorkoutTimer({
     if (!running || completingRef.current) return
     if (state.secondsLeft <= 3 && state.secondsLeft >= 1) {
       if (lastTickBeepRef.current !== state.secondsLeft) {
-        // Louder ticks when work/transition is about to end (start or finish cue)
-        const urgent =
-          state.phase === 'work' ||
-          state.phase === 'transition' ||
-          state.phase === 'rest'
-        playBeep(urgent && state.secondsLeft === 1 ? 'tickUrgent' : 'tick')
+        // Work ending: loud escalating multi-beeps so you hear the set finish.
+        if (state.phase === 'work') {
+          if (state.secondsLeft === 3) playBeep('ending3')
+          else if (state.secondsLeft === 2) playBeep('ending2')
+          else playBeep('ending1')
+        } else if (state.secondsLeft === 1) {
+          playBeep('tickUrgent')
+        } else {
+          playBeep('tick')
+        }
         lastTickBeepRef.current = state.secondsLeft
       }
     }
@@ -552,6 +603,27 @@ export function useWorkoutTimer({
     return () => window.clearInterval(id)
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [running, exercises, settings])
+
+  useEffect(() => {
+    if (completingRef.current) return
+    onSnapshotRef.current?.({
+      phase: state.phase,
+      exerciseIndex: state.exerciseIndex,
+      series: state.series,
+      round: state.round,
+      secondsLeft: state.secondsLeft,
+      savedFeedback: savedRef.current.map((item) => ({ ...item })),
+      currentDraft: draftRef.current ? { ...draftRef.current } : null,
+    })
+  }, [
+    state.phase,
+    state.exerciseIndex,
+    state.series,
+    state.round,
+    state.secondsLeft,
+    running,
+    sessionFeedback,
+  ])
 
   const current = exercises[state.exerciseIndex]
   const seriesPerRound = exercises.reduce(

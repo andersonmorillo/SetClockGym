@@ -1,4 +1,4 @@
-import { useMemo, useRef, useState } from 'react'
+import { useEffect, useMemo, useRef, useState } from 'react'
 import { saveWorkoutSession } from './api/history'
 import { ActiveTimer } from './components/ActiveTimer'
 import { ProgressPage } from './components/ProgressPage'
@@ -6,8 +6,17 @@ import { SoundsPage } from './components/SoundsPage'
 import { VideoStep } from './components/VideoStep'
 import { WorkoutBuilder } from './components/WorkoutBuilder'
 import { WorkoutComplete } from './components/WorkoutComplete'
+import {
+  ACTIVE_SESSION_VERSION,
+  clearActiveSession,
+  loadActiveSession,
+  saveActiveSession,
+  type ActiveSessionSnapshot,
+  type ActiveTimerSnapshot,
+} from './data/activeSession'
 import { loadWorkoutFromLocalStorage } from './data/savedWorkouts'
 import { useElapsedTimer } from './hooks/useElapsedTimer'
+import { stopWorkoutAudio } from './utils/workoutAudio'
 import {
   getCoolDownQueue,
   getWarmUpQueue,
@@ -29,17 +38,20 @@ const DEFAULT_SETTINGS: WorkoutSettings = {
 }
 
 const savedOnLoad = loadWorkoutFromLocalStorage()
+const restoredOnLoad = loadActiveSession()
 
 function App() {
-  const [screen, setScreen] = useState<AppScreen>('builder')
+  const [screen, setScreen] = useState<AppScreen>(
+    restoredOnLoad?.screen ?? 'builder',
+  )
   const [settings, setSettings] = useState<WorkoutSettings>(
-    savedOnLoad?.settings ?? DEFAULT_SETTINGS,
+    restoredOnLoad?.settings ?? savedOnLoad?.settings ?? DEFAULT_SETTINGS,
   )
   const [workout, setWorkout] = useState<WorkoutExercise[]>(
-    savedOnLoad?.exercises ?? [],
+    restoredOnLoad?.workout ?? savedOnLoad?.exercises ?? [],
   )
   const [workoutName, setWorkoutName] = useState(
-    savedOnLoad?.name ?? 'My workout',
+    restoredOnLoad?.workoutName ?? savedOnLoad?.name ?? 'My workout',
   )
   const [timerKey, setTimerKey] = useState(0)
   const [sessionKey, setSessionKey] = useState(0)
@@ -48,6 +60,22 @@ function App() {
   >('idle')
   const [sessionFeedback, setSessionFeedback] = useState<SessionFeedback | null>(
     null,
+  )
+  const [sessionRestored, setSessionRestored] = useState(Boolean(restoredOnLoad))
+  const [restoreBundle, setRestoreBundle] = useState<{
+    warmUpIndex: number
+    coolDownIndex: number
+    elapsedSeconds: number
+    timer: ActiveTimerSnapshot | null
+  } | null>(
+    restoredOnLoad
+      ? {
+          warmUpIndex: restoredOnLoad.warmUpIndex,
+          coolDownIndex: restoredOnLoad.coolDownIndex,
+          elapsedSeconds: restoredOnLoad.elapsedSeconds,
+          timer: restoredOnLoad.timer,
+        }
+      : null,
   )
   const historySavedRef = useRef(false)
   const sessionFeedbackRef = useRef<SessionFeedback | null>(null)
@@ -78,7 +106,15 @@ function App() {
     }
   }
 
+  function discardActiveSession() {
+    clearActiveSession()
+    setSessionRestored(false)
+    setRestoreBundle(null)
+  }
+
   function beginSession() {
+    // Do not stopWorkoutAudio here — Start already unlocked it in the same tap.
+    discardActiveSession()
     historySavedRef.current = false
     setHistoryStatus('idle')
     sessionFeedbackRef.current = null
@@ -102,6 +138,8 @@ function App() {
     _elapsedSeconds: number,
     feedback: SessionFeedback | null,
   ) {
+    discardActiveSession()
+    stopWorkoutAudio()
     sessionFeedbackRef.current = feedback
     setSessionFeedback(feedback)
     setScreen('complete')
@@ -118,6 +156,12 @@ function App() {
       return
     }
     finishSession(elapsedSeconds, feedback)
+  }
+
+  function exitToBuilder() {
+    discardActiveSession()
+    stopWorkoutAudio()
+    setScreen('builder')
   }
 
   if (screen === 'builder') {
@@ -166,11 +210,17 @@ function App() {
         screen={screen}
         workout={workout}
         settings={settings}
+        workoutName={workoutName}
         timerKey={timerKey}
         encouragementSeed={`session-${sessionKey}`}
         historyStatus={historyStatus}
         sessionFeedback={sessionFeedback}
-        onExit={() => setScreen('builder')}
+        sessionRestored={sessionRestored}
+        initialWarmUpIndex={restoreBundle?.warmUpIndex ?? 0}
+        initialCoolDownIndex={restoreBundle?.coolDownIndex ?? 0}
+        initialElapsedSeconds={restoreBundle?.elapsedSeconds ?? 0}
+        timerRestore={restoreBundle?.timer ?? null}
+        onExit={exitToBuilder}
         onWorkoutChange={setWorkout}
         onGoToTimer={goToTimer}
         onTimerComplete={goToCoolDownOrComplete}
@@ -183,7 +233,7 @@ function App() {
           void persistHistory(elapsed, feedback)
         }}
         onAgain={beginSession}
-        onEdit={() => setScreen('builder')}
+        onEdit={exitToBuilder}
       />
     </main>
   )
@@ -193,10 +243,16 @@ type WorkoutSessionProps = {
   screen: Exclude<AppScreen, 'builder' | 'progress' | 'sounds'>
   workout: WorkoutExercise[]
   settings: WorkoutSettings
+  workoutName: string
   timerKey: number
   encouragementSeed: string
   historyStatus: 'idle' | 'saving' | 'saved' | 'error'
   sessionFeedback: SessionFeedback | null
+  sessionRestored: boolean
+  initialWarmUpIndex: number
+  initialCoolDownIndex: number
+  initialElapsedSeconds: number
+  timerRestore: ActiveTimerSnapshot | null
   onExit: () => void
   onWorkoutChange: (workout: WorkoutExercise[]) => void
   onGoToTimer: () => void
@@ -214,10 +270,16 @@ function WorkoutSession({
   screen,
   workout,
   settings,
+  workoutName,
   timerKey,
   encouragementSeed,
   historyStatus,
   sessionFeedback,
+  sessionRestored,
+  initialWarmUpIndex,
+  initialCoolDownIndex,
+  initialElapsedSeconds,
+  timerRestore,
   onExit,
   onWorkoutChange,
   onGoToTimer,
@@ -229,16 +291,104 @@ function WorkoutSession({
 }: WorkoutSessionProps) {
   const warmUpQueue = useMemo(() => getWarmUpQueue(settings), [settings])
   const coolDownQueue = useMemo(() => getCoolDownQueue(settings), [settings])
-  const [warmUpIndex, setWarmUpIndex] = useState(0)
-  const [coolDownIndex, setCoolDownIndex] = useState(0)
+  const [warmUpIndex, setWarmUpIndex] = useState(initialWarmUpIndex)
+  const [coolDownIndex, setCoolDownIndex] = useState(initialCoolDownIndex)
   const [finalElapsed, setFinalElapsed] = useState(0)
   const feedbackRef = useRef<SessionFeedback | null>(sessionFeedback)
   feedbackRef.current = sessionFeedback
+  const timerSnapshotRef = useRef<ActiveTimerSnapshot | null>(timerRestore)
+  const persistTimerRef = useRef<number | null>(null)
   const elapsedSeconds = useElapsedTimer(
     screen === 'warmup' || screen === 'timer' || screen === 'cooldown',
+    initialElapsedSeconds,
   )
   const elapsedRef = useRef(elapsedSeconds)
   elapsedRef.current = elapsedSeconds
+
+  function buildSnapshot(): ActiveSessionSnapshot | null {
+    if (screen === 'complete') return null
+    if (screen !== 'warmup' && screen !== 'timer' && screen !== 'cooldown') {
+      return null
+    }
+    return {
+      version: ACTIVE_SESSION_VERSION,
+      savedAt: new Date().toISOString(),
+      screen,
+      workoutName,
+      settings,
+      workout,
+      warmUpIndex,
+      coolDownIndex,
+      elapsedSeconds: elapsedRef.current,
+      timer: screen === 'timer' ? timerSnapshotRef.current : null,
+    }
+  }
+
+  function flushSnapshot() {
+    const snapshot = buildSnapshot()
+    if (!snapshot) return
+    if (snapshot.screen === 'timer' && !snapshot.timer) return
+    saveActiveSession(snapshot)
+  }
+
+  function scheduleSnapshot() {
+    if (persistTimerRef.current != null) {
+      window.clearTimeout(persistTimerRef.current)
+    }
+    persistTimerRef.current = window.setTimeout(() => {
+      persistTimerRef.current = null
+      flushSnapshot()
+    }, 300)
+  }
+
+  useEffect(() => {
+    if (screen === 'complete') {
+      clearActiveSession()
+      return
+    }
+    scheduleSnapshot()
+    return () => {
+      if (persistTimerRef.current != null) {
+        window.clearTimeout(persistTimerRef.current)
+      }
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [
+    screen,
+    workout,
+    settings,
+    workoutName,
+    warmUpIndex,
+    coolDownIndex,
+    elapsedSeconds,
+  ])
+
+  useEffect(() => {
+    function onHide() {
+      if (persistTimerRef.current != null) {
+        window.clearTimeout(persistTimerRef.current)
+        persistTimerRef.current = null
+      }
+      flushSnapshot()
+    }
+    function onVisibility() {
+      if (document.visibilityState === 'hidden') onHide()
+    }
+    window.addEventListener('pagehide', onHide)
+    document.addEventListener('visibilitychange', onVisibility)
+    return () => {
+      window.removeEventListener('pagehide', onHide)
+      document.removeEventListener('visibilitychange', onVisibility)
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [
+    screen,
+    workout,
+    settings,
+    workoutName,
+    warmUpIndex,
+    coolDownIndex,
+  ])
 
   function continueWarmUp() {
     if (warmUpIndex < warmUpQueue.length - 1) {
@@ -284,6 +434,12 @@ function WorkoutSession({
         settings={settings}
         elapsedSeconds={elapsedSeconds}
         encouragementSeed={encouragementSeed}
+        restore={timerRestore}
+        sessionRestored={sessionRestored}
+        onTimerSnapshot={(snapshot) => {
+          timerSnapshotRef.current = snapshot
+          scheduleSnapshot()
+        }}
         onWorkoutChange={onWorkoutChange}
         onExit={onExit}
         onComplete={(feedback) => {

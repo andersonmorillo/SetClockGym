@@ -1,7 +1,9 @@
 import { useEffect, useState } from 'react'
 
-export function useElapsedTimer(running: boolean) {
-  const [elapsedSeconds, setElapsedSeconds] = useState(0)
+export function useElapsedTimer(running: boolean, initialSeconds = 0) {
+  const [elapsedSeconds, setElapsedSeconds] = useState(() =>
+    Math.max(0, initialSeconds),
+  )
 
   useEffect(() => {
     if (!running) return

@@ -25,6 +25,7 @@ import {
   setSpeakRoastsEnabled,
   stopSpeaking,
 } from '../utils/speech'
+import { unlockWorkoutAudio } from '../utils/workoutAudio'
 import { Encouragement } from './Encouragement'
 
 type Props = {
@@ -563,7 +564,9 @@ export function WorkoutBuilder({
             type="button"
             className="primary"
             disabled={workout.length === 0}
-            onClick={onStart}
+            onClick={() => {
+              void unlockWorkoutAudio().finally(() => onStart())
+            }}
           >
             Start workout
           </button>
@@ -766,7 +769,9 @@ export function WorkoutBuilder({
             type="button"
             className="primary"
             disabled={workout.length === 0}
-            onClick={onStart}
+            onClick={() => {
+              void unlockWorkoutAudio().finally(() => onStart())
+            }}
           >
             Start workout
           </button>

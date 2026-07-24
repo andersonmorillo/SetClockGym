@@ -1,7 +1,13 @@
 import { useEffect, useRef, useState } from 'react'
 import { getExerciseMediaUrl } from '../api/exercises'
+import type { ActiveTimerSnapshot } from '../data/activeSession'
 import { useWakeLock } from '../hooks/useWakeLock'
 import { useWorkoutTimer } from '../hooks/useWorkoutTimer'
+import {
+  resumeWorkoutAudio,
+  setWorkoutAudioPlaying,
+  startWorkoutAudio,
+} from '../utils/workoutAudio'
 import type { WorkoutExercise, WorkoutSettings } from '../types'
 import type { SessionFeedback } from '../utils/sessionFeedback'
 import { formatTime } from '../utils/formatTime'
@@ -12,6 +18,9 @@ type Props = {
   settings: WorkoutSettings
   elapsedSeconds: number
   encouragementSeed: string
+  restore?: ActiveTimerSnapshot | null
+  sessionRestored?: boolean
+  onTimerSnapshot?: (snapshot: ActiveTimerSnapshot) => void
   onWorkoutChange: (workout: WorkoutExercise[]) => void
   onExit: () => void
   onComplete: (feedback: SessionFeedback) => void
@@ -28,11 +37,16 @@ export function ActiveTimer({
   settings,
   elapsedSeconds,
   encouragementSeed,
+  restore = null,
+  sessionRestored = false,
+  onTimerSnapshot,
   onWorkoutChange,
   onExit,
   onComplete,
 }: Props) {
   const [routineOpen, setRoutineOpen] = useState(false)
+  const [showRestoredHint, setShowRestoredHint] = useState(sessionRestored)
+  const [showSoundHint, setShowSoundHint] = useState(true)
   const resumeAfterRoutineRef = useRef(false)
   const {
     phase,
@@ -52,12 +66,60 @@ export function ActiveTimer({
     skipSeries,
     skipExercise,
     jumpToExercise,
-  } = useWorkoutTimer({ exercises: workout, settings, onComplete })
+  } = useWorkoutTimer({
+    exercises: workout,
+    settings,
+    onComplete,
+    restore,
+    onSnapshot: onTimerSnapshot,
+  })
 
   useWakeLock(true)
 
   const toggleRunningRef = useRef(toggleRunning)
   toggleRunningRef.current = toggleRunning
+  const resumeCountdownRef = useRef(resumeCountdown)
+  resumeCountdownRef.current = resumeCountdown
+  const pauseCountdownRef = useRef(pauseCountdown)
+  pauseCountdownRef.current = pauseCountdown
+
+  useEffect(() => {
+    if (running) {
+      setShowRestoredHint(false)
+      setShowSoundHint(false)
+    }
+    setWorkoutAudioPlaying(running)
+  }, [running])
+
+  // Bind Media Session handlers; audio must be unlocked via Start/Resume gesture.
+  useEffect(() => {
+    const handlers = {
+      onPlay: () => {
+        resumeCountdownRef.current()
+        void resumeWorkoutAudio()
+      },
+      onPause: () => {
+        pauseCountdownRef.current()
+      },
+    }
+
+    if (!sessionRestored) {
+      void startWorkoutAudio(handlers)
+    }
+
+    function onVisibility() {
+      if (document.visibilityState === 'visible') {
+        void resumeWorkoutAudio()
+      }
+    }
+    document.addEventListener('visibilitychange', onVisibility)
+
+    return () => {
+      document.removeEventListener('visibilitychange', onVisibility)
+      // Do not stop audio here — cool-down/complete may remount screens.
+      // App stops audio on Exit / finish.
+    }
+  }, [sessionRestored])
 
   useEffect(() => {
     function onKeyDown(event: KeyboardEvent) {
@@ -151,94 +213,131 @@ export function ActiveTimer({
         </button>
       </div>
 
-      <Encouragement seed={`${encouragementSeed}-${current.instanceId}`} />
+      <div className="timer-body">
+        <Encouragement seed={`${encouragementSeed}-${current.instanceId}`} />
+        {showRestoredHint && (
+          <p className="muted session-restored-hint">
+            Session restored — tap Resume
+          </p>
+        )}
+        {showSoundHint && (
+          <p className="muted sound-hint">
+            No sound? Turn off Silent mode and raise media volume, then tap
+            Resume.
+          </p>
+        )}
 
-      <p className="phase-label">{phaseLabel(phase)}</p>
-      <p
-        className={`countdown${secondsLeft <= 3 ? ' is-urgent' : ''}`}
-      >
-        {formatTime(secondsLeft)}
-      </p>
+        <p className="phase-label">{phaseLabel(phase)}</p>
+        <p
+          className={`countdown${secondsLeft <= 3 ? ' is-urgent' : ''}`}
+        >
+          {formatTime(secondsLeft)}
+        </p>
 
-      <div className="timer-meta">
-        <span>
-          Round {round}/{settings.rounds}
-        </span>
-        <span>
-          Series {series}/{seriesTotal}
-        </span>
-        <span>Reps {repsText}</span>
+        <div className="timer-meta">
+          <span>
+            Round {round}/{settings.rounds}
+          </span>
+          <span>
+            Series {series}/{seriesTotal}
+          </span>
+          <span>Reps {repsText}</span>
+        </div>
+
+        {image && (
+          <div className="timer-media">
+            <img
+              className="timer-image"
+              src={image}
+              alt={current.exercise.name}
+              width={360}
+              height={360}
+            />
+          </div>
+        )}
+
+        <h2>{current.exercise.name}</h2>
+        {current.notes && <p className="notes">{current.notes}</p>}
+
+        {phase === 'transition' && (
+          <p className="muted rest-cue">
+            Get ready — move to the equipment for this exercise.
+          </p>
+        )}
+        {nextLabel && phase === 'work' && (
+          <p className="next">Up next: {nextLabel}</p>
+        )}
+        {phase === 'rest' && nextLabel && (
+          <p className="next">Coming up: {nextLabel}</p>
+        )}
+        {phase === 'transition' && nextLabel && (
+          <p className="next">Starting: {nextLabel}</p>
+        )}
+        {phase === 'rest' && (
+          <p className="muted rest-cue phone-hide">
+            Full rest supports next-set performance.
+          </p>
+        )}
       </div>
 
-      {image && (
-        <img
-          className="timer-image"
-          src={image}
-          alt={current.exercise.name}
-          width={360}
-          height={360}
-        />
-      )}
+      <div className="timer-footer">
+        <div className="progress-track">
+          <div
+            className="progress-fill"
+            style={{ width: `${progress * 100}%` }}
+          />
+        </div>
 
-      <h2>{current.exercise.name}</h2>
-      {current.notes && <p className="notes">{current.notes}</p>}
-
-      {phase === 'transition' && (
-        <p className="muted rest-cue">
-          Get ready — move to the equipment for this exercise.
-        </p>
-      )}
-      {nextLabel && phase === 'work' && (
-        <p className="next">Up next: {nextLabel}</p>
-      )}
-      {phase === 'rest' && nextLabel && (
-        <p className="next">Coming up: {nextLabel}</p>
-      )}
-      {phase === 'transition' && nextLabel && (
-        <p className="next">Starting: {nextLabel}</p>
-      )}
-      {phase === 'rest' && (
-        <p className="muted rest-cue">
-          Full rest supports next-set performance.
-        </p>
-      )}
-
-      <div className="progress-track">
-        <div className="progress-fill" style={{ width: `${progress * 100}%` }} />
-      </div>
-
-      <div className="control-stack">
-        <button type="button" className="primary" onClick={toggleRunning}>
-          {running ? 'Pause' : 'Resume'}
-        </button>
-        <div className="skip-actions">
+        <div className="control-stack">
           <button
             type="button"
-            className="ghost"
-            disabled={phase !== 'rest'}
-            onClick={skipRest}
+            className="primary"
+            onClick={() => {
+              if (!running) {
+                void startWorkoutAudio({
+                  onPlay: () => {
+                    resumeCountdownRef.current()
+                    void resumeWorkoutAudio()
+                  },
+                  onPause: () => {
+                    pauseCountdownRef.current()
+                  },
+                })
+              }
+              toggleRunning()
+            }}
           >
-            Skip rest
+            {running ? 'Pause' : 'Resume'}
           </button>
-          <button
-            type="button"
-            className="ghost"
-            disabled={phase !== 'transition'}
-            onClick={skipTransition}
-          >
-            Skip transition
-          </button>
-          <button
-            type="button"
-            className="ghost"
-            disabled={phase === 'transition'}
-            onClick={skipSeries}
-          >
-            Skip series
-          </button>
-          <button type="button" className="ghost" onClick={skipExercise}>
-            Skip exercise
-          </button>
+          <div className="skip-actions">
+            <button
+              type="button"
+              className="ghost"
+              disabled={phase !== 'rest'}
+              onClick={skipRest}
+            >
+              Skip rest
+            </button>
+            <button
+              type="button"
+              className="ghost"
+              disabled={phase !== 'transition'}
+              onClick={skipTransition}
+            >
+              Skip transition
+            </button>
+            <button
+              type="button"
+              className="ghost"
+              disabled={phase === 'transition'}
+              onClick={skipSeries}
+            >
+              Skip series
+            </button>
+            <button type="button" className="ghost" onClick={skipExercise}>
+              Skip exercise
+            </button>
+          </div>
         </div>
       </div>
 
