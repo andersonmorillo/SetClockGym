@@ -11,9 +11,11 @@ import { speakRoast, stopSpeaking } from '../utils/speech'
 
 type Props = {
   seed: string | number
+  /** When true, play roast audio. Default false — only enable during the workout timer. */
+  playSound?: boolean
 }
 
-export function Encouragement({ seed }: Props) {
+export function Encouragement({ seed, playSound = false }: Props) {
   const [ready, setReady] = useState(false)
   const [version, setVersion] = useState(0)
 
@@ -50,12 +52,12 @@ export function Encouragement({ seed }: Props) {
     : ENCOURAGEMENTS[0]
 
   useEffect(() => {
-    if (!ready) return
+    if (!ready || !playSound) return
     speakRoast(index)
     return () => {
       stopSpeaking()
     }
-  }, [index, ready, version])
+  }, [index, ready, version, playSound])
 
   return <p className="encouragement">“{line}”</p>
 }

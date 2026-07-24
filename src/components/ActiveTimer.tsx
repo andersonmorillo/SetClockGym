@@ -2,8 +2,10 @@ import { useEffect, useRef } from 'react'
 import { getExerciseMediaUrl } from '../api/exercises'
 import { useWorkoutTimer } from '../hooks/useWorkoutTimer'
 import type { WorkoutExercise, WorkoutSettings } from '../types'
+import type { SessionFeedback } from '../utils/sessionFeedback'
 import { formatTime } from '../utils/formatTime'
 import { Encouragement } from './Encouragement'
+import { ExerciseFeedbackConfirm } from './ExerciseFeedbackConfirm'
 
 type Props = {
   workout: WorkoutExercise[]
@@ -11,7 +13,7 @@ type Props = {
   elapsedSeconds: number
   encouragementSeed: string
   onExit: () => void
-  onComplete: () => void
+  onComplete: (feedback: SessionFeedback) => void
 }
 
 export function ActiveTimer({
@@ -31,17 +33,22 @@ export function ActiveTimer({
     running,
     current,
     progress,
+    pendingConfirm,
     toggleRunning,
     skipRest,
     skipSeries,
     skipExercise,
+    saveExerciseFeedback,
+    discardExerciseFeedback,
   } = useWorkoutTimer({ exercises: workout, settings, onComplete })
 
   const toggleRunningRef = useRef(toggleRunning)
   toggleRunningRef.current = toggleRunning
+  const confirming = pendingConfirm != null
 
   useEffect(() => {
     function onKeyDown(event: KeyboardEvent) {
+      if (confirming) return
       if (event.code !== 'Space' && event.key !== ' ') return
       if (event.repeat) return
 
@@ -64,9 +71,27 @@ export function ActiveTimer({
 
     window.addEventListener('keydown', onKeyDown)
     return () => window.removeEventListener('keydown', onKeyDown)
-  }, [])
+  }, [confirming])
 
   if (!current) return null
+
+  if (pendingConfirm) {
+    return (
+      <div className="timer-screen screen-enter feedback-confirm-screen">
+        <div className="timer-top">
+          <button type="button" className="ghost" onClick={onExit}>
+            Exit
+          </button>
+          <span className="elapsed">Total {formatTime(elapsedSeconds)}</span>
+        </div>
+        <ExerciseFeedbackConfirm
+          preview={pendingConfirm.preview}
+          onSave={(rpe) => saveExerciseFeedback(rpe)}
+          onDiscard={discardExerciseFeedback}
+        />
+      </div>
+    )
+  }
 
   const image = getExerciseMediaUrl(current.exercise, true)
   const nextIndex =
@@ -134,6 +159,11 @@ export function ActiveTimer({
       )}
       {phase === 'rest' && nextLabel && (
         <p className="next">Coming up: {nextLabel}</p>
+      )}
+      {phase === 'rest' && (
+        <p className="muted rest-cue">
+          Full rest supports next-set performance.
+        </p>
       )}
 
       <div className="progress-track">

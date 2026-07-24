@@ -43,6 +43,15 @@ def connect() -> sqlite3.Connection:
     return conn
 
 
+def ensure_column(conn: sqlite3.Connection, table: str, column: str, ddl: str) -> None:
+    cols = {
+        row["name"]
+        for row in conn.execute(f"PRAGMA table_info({table})").fetchall()
+    }
+    if column not in cols:
+        conn.execute(f"ALTER TABLE {table} ADD COLUMN {ddl}")
+
+
 def init_db() -> None:
     with connect() as conn:
         conn.execute(
@@ -55,9 +64,13 @@ def init_db() -> None:
                 rounds INTEGER NOT NULL,
                 total_series INTEGER NOT NULL,
                 elapsed_seconds INTEGER NOT NULL,
-                exercises_json TEXT NOT NULL
+                exercises_json TEXT NOT NULL,
+                feedback_json TEXT
             )
             """
+        )
+        ensure_column(
+            conn, "workout_sessions", "feedback_json", "feedback_json TEXT"
         )
         conn.execute(
             """
@@ -148,6 +161,7 @@ class SessionCreate(BaseModel):
     total_series: int = Field(ge=0)
     elapsed_seconds: int = Field(ge=0)
     exercises: list[dict[str, Any]] = Field(default_factory=list)
+    feedback: dict[str, Any] | None = None
     created_at: str | None = None
 
 
@@ -160,6 +174,7 @@ class SessionOut(BaseModel):
     total_series: int
     elapsed_seconds: int
     exercises: list[dict[str, Any]]
+    feedback: dict[str, Any] | None = None
 
 
 def parse_dt(value: str) -> datetime:
@@ -173,6 +188,30 @@ def week_start(dt: datetime) -> datetime:
     local = dt.astimezone(timezone.utc)
     monday = local - timedelta(days=local.weekday())
     return monday.replace(hour=0, minute=0, second=0, microsecond=0)
+
+
+def month_start(dt: datetime) -> datetime:
+    local = dt.astimezone(timezone.utc)
+    return local.replace(day=1, hour=0, minute=0, second=0, microsecond=0)
+
+
+def next_month_start(dt: datetime) -> datetime:
+    start = month_start(dt)
+    if start.month == 12:
+        return start.replace(year=start.year + 1, month=1)
+    return start.replace(month=start.month + 1)
+
+
+def previous_month_start(dt: datetime) -> datetime:
+    start = month_start(dt)
+    if start.month == 1:
+        return start.replace(year=start.year - 1, month=12)
+    return start.replace(month=start.month - 1)
+
+
+def planned_sessions_for_month(start: datetime) -> int:
+    days = (next_month_start(start) - start).days
+    return max(1, round(days * PLANNED_SESSIONS_PER_WEEK / 7))
 
 
 def classify_workout(name: str) -> str:
@@ -200,6 +239,9 @@ def classify_workout(name: str) -> str:
 
 
 def row_to_session(row: sqlite3.Row) -> SessionOut:
+    keys = set(row.keys())
+    feedback_raw = row["feedback_json"] if "feedback_json" in keys else None
+    feedback = json.loads(feedback_raw) if feedback_raw else None
     return SessionOut(
         id=row["id"],
         created_at=row["created_at"],
@@ -209,6 +251,7 @@ def row_to_session(row: sqlite3.Row) -> SessionOut:
         total_series=row["total_series"],
         elapsed_seconds=row["elapsed_seconds"],
         exercises=json.loads(row["exercises_json"] or "[]"),
+        feedback=feedback,
     )
 
 
@@ -218,7 +261,26 @@ def pct_change(current: float, previous: float) -> float | None:
     return round(((current - previous) / previous) * 100, 1)
 
 
-def compute_week_stats(sessions: list[SessionOut]) -> dict[str, Any]:
+def aggregate_verdicts(
+    sessions: list[SessionOut], key: str
+) -> list[dict[str, Any]]:
+    counts: dict[str, int] = {}
+    for session in sessions:
+        feedback = session.feedback or {}
+        for item in feedback.get(key) or []:
+            name = str(item.get("name") or "exercise")
+            counts[name] = counts.get(name, 0) + 1
+    return [
+        {"name": name, "count": count}
+        for name, count in sorted(
+            counts.items(), key=lambda pair: (-pair[1], pair[0])
+        )[:8]
+    ]
+
+
+def compute_period_stats(
+    sessions: list[SessionOut], planned_sessions: int
+) -> dict[str, Any]:
     total_seconds = sum(s.elapsed_seconds for s in sessions)
     total_series = sum(s.total_series for s in sessions)
     mix = {"push": 0, "pull": 0, "legs": 0, "other": 0}
@@ -238,7 +300,43 @@ def compute_week_stats(sessions: list[SessionOut]) -> dict[str, Any]:
             if reps > 0:
                 best_reps[name] = max(best_reps.get(name, 0), reps)
 
+    with_feedback = [s for s in sessions if s.feedback]
+    completion_values = [
+        float(s.feedback.get("series_completion_pct") or 0)
+        for s in with_feedback
+        if isinstance(s.feedback, dict)
+    ]
+    pause_count = sum(
+        int((s.feedback or {}).get("pause_count") or 0) for s in with_feedback
+    )
+    skip_series_count = sum(
+        int((s.feedback or {}).get("skip_series_count") or 0) for s in with_feedback
+    )
+    skip_exercise_count = sum(
+        int((s.feedback or {}).get("skip_exercise_count") or 0) for s in with_feedback
+    )
+    skip_rest_count = sum(
+        int((s.feedback or {}).get("skip_rest_count") or 0) for s in with_feedback
+    )
+    rest_compliance_values = [
+        float(s.feedback.get("rest_compliance_pct"))
+        for s in with_feedback
+        if isinstance(s.feedback, dict)
+        and s.feedback.get("rest_compliance_pct") is not None
+    ]
+    session_rpe_values = [
+        float(s.feedback.get("session_rpe"))
+        for s in with_feedback
+        if isinstance(s.feedback, dict) and s.feedback.get("session_rpe") is not None
+    ]
+    training_load_values = [
+        float(s.feedback.get("training_load"))
+        for s in with_feedback
+        if isinstance(s.feedback, dict) and s.feedback.get("training_load") is not None
+    ]
+
     count = len(sessions)
+    planned = max(1, planned_sessions)
     return {
         "sessions": count,
         "total_seconds": total_seconds,
@@ -246,11 +344,41 @@ def compute_week_stats(sessions: list[SessionOut]) -> dict[str, Any]:
         "total_series": total_series,
         "avg_session_seconds": int(total_seconds / count) if count else 0,
         "avg_session_minutes": round((total_seconds / count) / 60, 1) if count else 0,
-        "adherence_pct": round((count / PLANNED_SESSIONS_PER_WEEK) * 100, 1),
+        "adherence_pct": round((count / planned) * 100, 1),
+        "series_completion_pct": (
+            round(sum(completion_values) / len(completion_values), 1)
+            if completion_values
+            else None
+        ),
+        "pause_count": pause_count,
+        "skip_series_count": skip_series_count,
+        "skip_exercise_count": skip_exercise_count,
+        "skip_rest_count": skip_rest_count,
+        "rest_compliance_pct": (
+            round(sum(rest_compliance_values) / len(rest_compliance_values), 1)
+            if rest_compliance_values
+            else None
+        ),
+        "avg_session_rpe": (
+            round(sum(session_rpe_values) / len(session_rpe_values), 1)
+            if session_rpe_values
+            else None
+        ),
+        "avg_training_load": (
+            round(sum(training_load_values) / len(training_load_values), 1)
+            if training_load_values
+            else None
+        ),
+        "strengths": aggregate_verdicts(with_feedback, "strengths"),
+        "weaknesses": aggregate_verdicts(with_feedback, "weaknesses"),
         "workout_mix": mix,
         "best_reps": best_reps,
         "best_hang_seconds": best_hang_seconds,
     }
+
+
+def compute_week_stats(sessions: list[SessionOut]) -> dict[str, Any]:
+    return compute_period_stats(sessions, PLANNED_SESSIONS_PER_WEEK)
 
 
 @app.on_event("startup")
@@ -468,13 +596,14 @@ def list_history(limit: int = 50) -> list[SessionOut]:
 @app.post("/api/history", response_model=SessionOut)
 def create_history(payload: SessionCreate) -> SessionOut:
     created_at = payload.created_at or datetime.now(timezone.utc).isoformat()
+    feedback_json = json.dumps(payload.feedback) if payload.feedback else None
     with connect() as conn:
         cursor = conn.execute(
             """
             INSERT INTO workout_sessions (
                 created_at, workout_name, exercise_count, rounds,
-                total_series, elapsed_seconds, exercises_json
-            ) VALUES (?, ?, ?, ?, ?, ?, ?)
+                total_series, elapsed_seconds, exercises_json, feedback_json
+            ) VALUES (?, ?, ?, ?, ?, ?, ?, ?)
             """,
             (
                 created_at,
@@ -484,6 +613,7 @@ def create_history(payload: SessionCreate) -> SessionOut:
                 payload.total_series,
                 payload.elapsed_seconds,
                 json.dumps(payload.exercises),
+                feedback_json,
             ),
         )
         conn.commit()
@@ -578,6 +708,82 @@ def weekly_kpis() -> dict[str, Any]:
             row_to_session(row).model_dump()
             for row in reversed(rows[-12:])
         ] if rows else [],
+    }
+
+
+@app.get("/api/kpis/monthly")
+def monthly_kpis() -> dict[str, Any]:
+    with connect() as conn:
+        rows = conn.execute(
+            """
+            SELECT * FROM workout_sessions
+            ORDER BY datetime(created_at) ASC
+            """
+        ).fetchall()
+
+    sessions = [row_to_session(row) for row in rows]
+    now = datetime.now(timezone.utc)
+    this_start = month_start(now)
+    last_start = previous_month_start(now)
+    next_start = next_month_start(now)
+    planned_this = planned_sessions_for_month(this_start)
+    planned_last = planned_sessions_for_month(last_start)
+
+    this_month = [
+        s
+        for s in sessions
+        if this_start <= parse_dt(s.created_at) < next_start
+    ]
+    last_month = [
+        s
+        for s in sessions
+        if last_start <= parse_dt(s.created_at) < this_start
+    ]
+
+    this_stats = compute_period_stats(this_month, planned_this)
+    last_stats = compute_period_stats(last_month, planned_last)
+
+    streak = 0
+    cursor = this_start
+    if this_stats["sessions"] == 0:
+        cursor = last_start
+    while True:
+        period_end = next_month_start(cursor)
+        planned = planned_sessions_for_month(cursor)
+        count = sum(
+            1
+            for s in sessions
+            if cursor <= parse_dt(s.created_at) < period_end
+        )
+        if count >= planned:
+            streak += 1
+            cursor = previous_month_start(cursor)
+            continue
+        break
+
+    return {
+        "planned_sessions_per_month": planned_this,
+        "month_start": this_start.date().isoformat(),
+        "this_month": this_stats,
+        "last_month": last_stats,
+        "deltas": {
+            "sessions_pct": pct_change(
+                this_stats["sessions"], last_stats["sessions"]
+            ),
+            "minutes_pct": pct_change(
+                this_stats["total_minutes"], last_stats["total_minutes"]
+            ),
+            "series_pct": pct_change(
+                this_stats["total_series"], last_stats["total_series"]
+            ),
+        },
+        "streak_months": streak,
+        "recent_sessions": [
+            row_to_session(row).model_dump()
+            for row in reversed(rows[-12:])
+        ]
+        if rows
+        else [],
     }
 
 

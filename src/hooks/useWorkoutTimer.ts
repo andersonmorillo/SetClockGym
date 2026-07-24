@@ -1,11 +1,21 @@
 import { useEffect, useRef, useState } from 'react'
 import type { TimerPhase, WorkoutExercise, WorkoutSettings } from '../types'
 import { playBeep } from '../utils/beep'
+import {
+  buildSessionFeedback,
+  createEmptyDraft,
+  draftFromFeedback,
+  finalizeExerciseFeedback,
+  mergeDrafts,
+  type ExerciseDraft,
+  type ExerciseFeedback,
+  type SessionFeedback,
+} from '../utils/sessionFeedback'
 
 type UseWorkoutTimerArgs = {
   exercises: WorkoutExercise[]
   settings: WorkoutSettings
-  onComplete: () => void
+  onComplete: (feedback: SessionFeedback) => void
 }
 
 type TimerState = {
@@ -14,6 +24,11 @@ type TimerState = {
   series: number
   round: number
   secondsLeft: number
+}
+
+export type PendingExerciseConfirm = {
+  draft: ExerciseDraft
+  preview: ExerciseFeedback
 }
 
 function workSecondsFor(
@@ -189,6 +204,25 @@ function skipToNextExercise(
   }
 }
 
+function leavesExercise(
+  prev: TimerState,
+  next: TimerState | 'done',
+): boolean {
+  if (next === 'done') return true
+  return next.exerciseIndex !== prev.exerciseIndex
+}
+
+function plannedSeriesTotal(
+  exercises: WorkoutExercise[],
+  settings: WorkoutSettings,
+): number {
+  const perRound = exercises.reduce(
+    (sum, item) => sum + Math.max(1, item.series || 1),
+    0,
+  )
+  return perRound * Math.max(1, settings.rounds)
+}
+
 export function useWorkoutTimer({
   exercises,
   settings,
@@ -202,8 +236,15 @@ export function useWorkoutTimer({
     secondsLeft: workSecondsFor(exercises, 0, settings),
   })
   const [running, setRunning] = useState(true)
+  const [pendingConfirm, setPendingConfirm] =
+    useState<PendingExerciseConfirm | null>(null)
+  const [sessionFeedback, setSessionFeedback] = useState<SessionFeedback>(() =>
+    emptyPlannedFeedback(exercises, settings),
+  )
+
   const onCompleteRef = useRef(onComplete)
   onCompleteRef.current = onComplete
+  const pendingConfirmRef = useRef<PendingExerciseConfirm | null>(null)
   const lastTickBeepRef = useRef<number | null>(null)
   const prevSeriesCueRef = useRef<{
     primed: boolean
@@ -218,6 +259,122 @@ export function useWorkoutTimer({
     exerciseIndex: state.exerciseIndex,
     round: state.round,
   })
+
+  const draftRef = useRef<ExerciseDraft | null>(null)
+  const savedRef = useRef<ExerciseFeedback[]>([])
+  const nextAfterConfirmRef = useRef<TimerState | 'done' | null>(null)
+  const pauseStartedAtRef = useRef<number | null>(null)
+  const confirmingRef = useRef(false)
+  const exercisesRef = useRef(exercises)
+  exercisesRef.current = exercises
+  const settingsRef = useRef(settings)
+  settingsRef.current = settings
+
+  function ensureDraft(forState: TimerState = state): ExerciseDraft {
+    const list = exercisesRef.current
+    const item = list[forState.exerciseIndex]
+    if (!item) {
+      return createEmptyDraft('unknown', 'Exercise', 1)
+    }
+    if (
+      !draftRef.current ||
+      draftRef.current.instanceId !== item.instanceId
+    ) {
+      draftRef.current = createEmptyDraft(
+        item.instanceId,
+        item.exercise.name,
+        seriesFor(list, forState.exerciseIndex),
+      )
+    }
+    return draftRef.current
+  }
+
+  function rebuildSessionFeedback(saved: ExerciseFeedback[]) {
+    const feedback = buildSessionFeedback(
+      saved,
+      plannedSeriesTotal(exercisesRef.current, settingsRef.current),
+    )
+    setSessionFeedback(feedback)
+    return feedback
+  }
+
+  function closePauseClock(draft: ExerciseDraft) {
+    if (pauseStartedAtRef.current == null) return
+    const elapsed = Math.max(
+      0,
+      Math.round((Date.now() - pauseStartedAtRef.current) / 1000),
+    )
+    draft.pauseSeconds += elapsed
+    pauseStartedAtRef.current = null
+  }
+
+  function requestConfirm(prev: TimerState, next: TimerState | 'done') {
+    confirmingRef.current = true
+    const draft = ensureDraft(prev)
+    closePauseClock(draft)
+    if (draft.skippedExercise) {
+      const remaining = Math.max(
+        0,
+        draft.plannedSeries - draft.completedSeries - draft.skippedSeries,
+      )
+      draft.skippedSeries += remaining
+    }
+    const preview = finalizeExerciseFeedback(draft, true)
+    nextAfterConfirmRef.current = next
+    setRunning(false)
+    pauseStartedAtRef.current = null
+    const pending = { draft: { ...draft }, preview }
+    pendingConfirmRef.current = pending
+    setPendingConfirm(pending)
+  }
+
+  function applyResolvedConfirm(saved: boolean, rpe: number | null = null) {
+    const pending = pendingConfirmRef.current
+    const next = nextAfterConfirmRef.current
+    if (!pending || next == null) return
+
+    if (saved) {
+      const draftWithRpe: ExerciseDraft = { ...pending.draft, rpe }
+      const finalized = finalizeExerciseFeedback(draftWithRpe, true)
+      const existingIndex = savedRef.current.findIndex(
+        (item) => item.instanceId === finalized.instanceId,
+      )
+      if (existingIndex >= 0) {
+        const previous = savedRef.current[existingIndex]
+        const mergedDraft = mergeDrafts(
+          draftFromFeedback(previous),
+          draftWithRpe,
+        )
+        savedRef.current[existingIndex] = finalizeExerciseFeedback(
+          mergedDraft,
+          true,
+        )
+      } else {
+        savedRef.current = [...savedRef.current, finalized]
+      }
+    }
+
+    const feedback = rebuildSessionFeedback(savedRef.current)
+    draftRef.current = null
+    nextAfterConfirmRef.current = null
+    pendingConfirmRef.current = null
+    confirmingRef.current = false
+    setPendingConfirm(null)
+
+    if (next === 'done') {
+      playBeep('seriesEnd')
+      onCompleteRef.current(feedback)
+      return
+    }
+
+    setState(next)
+    setRunning(true)
+  }
+
+  useEffect(() => {
+    ensureDraft(state)
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [state.exerciseIndex])
 
   useEffect(() => {
     const prev = prevSeriesCueRef.current
@@ -262,37 +419,47 @@ export function useWorkoutTimer({
   }, [state.phase, state.series, state.exerciseIndex, state.round])
 
   useEffect(() => {
-    if (!running) return
+    if (!running || pendingConfirm) return
     if (state.secondsLeft <= 3 && state.secondsLeft >= 1) {
       if (lastTickBeepRef.current !== state.secondsLeft) {
         playBeep('tick')
         lastTickBeepRef.current = state.secondsLeft
       }
     }
-  }, [running, state.secondsLeft])
+  }, [running, state.secondsLeft, pendingConfirm])
 
   useEffect(() => {
-    if (!running) return
+    if (!running || pendingConfirm || confirmingRef.current) return
 
     const id = window.setInterval(() => {
+      if (confirmingRef.current) return
       setState((prev) => {
         if (prev.secondsLeft > 1) {
           return { ...prev, secondsLeft: prev.secondsLeft - 1 }
         }
 
-        const next = advance(prev, exercises, settings)
-        if (next === 'done') {
-          setRunning(false)
-          playBeep('seriesEnd')
-          onCompleteRef.current()
+        const draft = ensureDraft(prev)
+        if (prev.phase === 'work') {
+          draft.completedSeries += 1
+        }
+
+        const next = advance(prev, exercisesRef.current, settingsRef.current)
+        if (next !== 'done' && next.phase === 'rest' && prev.phase === 'work') {
+          draft.restOpportunityCount += 1
+        }
+        if (leavesExercise(prev, next)) {
+          confirmingRef.current = true
+          window.setTimeout(() => requestConfirm(prev, next), 0)
           return { ...prev, secondsLeft: 0 }
         }
+
         return next
       })
     }, 1000)
 
     return () => window.clearInterval(id)
-  }, [running, exercises, settings])
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [running, pendingConfirm, exercises, settings])
 
   const current = exercises[state.exerciseIndex]
   const seriesPerRound = exercises.reduce(
@@ -320,43 +487,85 @@ export function useWorkoutTimer({
     running,
     current,
     progress: Math.min(completedSteps / totalSteps, 1),
-    toggleRunning: () => setRunning((value) => !value),
+    pendingConfirm,
+    sessionFeedback,
+    saveExerciseFeedback: (rpe: number | null = null) =>
+      applyResolvedConfirm(true, rpe),
+    discardExerciseFeedback: () => applyResolvedConfirm(false, null),
+    toggleRunning: () => {
+      if (pendingConfirm) return
+      setRunning((value) => {
+        const draft = ensureDraft()
+        if (value) {
+          // pausing
+          draft.pauseCount += 1
+          pauseStartedAtRef.current = Date.now()
+        } else {
+          closePauseClock(draft)
+        }
+        return !value
+      })
+    },
     skipRest: () => {
+      if (pendingConfirm || confirmingRef.current) return
       setState((prev) => {
         if (prev.phase !== 'rest') return prev
-        const next = advanceAfterRest(prev, exercises, settings)
-        if (next === 'done') {
-          setRunning(false)
-          playBeep('seriesEnd')
-          onCompleteRef.current()
+        const draft = ensureDraft(prev)
+        draft.skipRestCount += 1
+        const next = advanceAfterRest(
+          prev,
+          exercisesRef.current,
+          settingsRef.current,
+        )
+        if (leavesExercise(prev, next)) {
+          confirmingRef.current = true
+          window.setTimeout(() => requestConfirm(prev, next), 0)
           return { ...prev, secondsLeft: 0 }
         }
-        return next
+        return next === 'done' ? prev : next
       })
     },
     skipSeries: () => {
+      if (pendingConfirm || confirmingRef.current) return
       setState((prev) => {
-        const next = skipToNextSeries(prev, exercises, settings)
-        if (next === 'done') {
-          setRunning(false)
-          playBeep('seriesEnd')
-          onCompleteRef.current()
+        const draft = ensureDraft(prev)
+        if (prev.phase === 'work') {
+          draft.skippedSeries += 1
+        }
+        const next = skipToNextSeries(
+          prev,
+          exercisesRef.current,
+          settingsRef.current,
+        )
+        if (leavesExercise(prev, next)) {
+          confirmingRef.current = true
+          window.setTimeout(() => requestConfirm(prev, next), 0)
           return { ...prev, secondsLeft: 0 }
         }
-        return next
+        return next === 'done' ? prev : next
       })
     },
     skipExercise: () => {
+      if (pendingConfirm || confirmingRef.current) return
       setState((prev) => {
-        const next = skipToNextExercise(prev, exercises, settings)
-        if (next === 'done') {
-          setRunning(false)
-          playBeep('seriesEnd')
-          onCompleteRef.current()
-          return { ...prev, secondsLeft: 0 }
-        }
-        return next
+        const draft = ensureDraft(prev)
+        draft.skippedExercise = true
+        const next = skipToNextExercise(
+          prev,
+          exercisesRef.current,
+          settingsRef.current,
+        )
+        confirmingRef.current = true
+        window.setTimeout(() => requestConfirm(prev, next), 0)
+        return { ...prev, secondsLeft: 0 }
       })
     },
   }
+}
+
+function emptyPlannedFeedback(
+  exercises: WorkoutExercise[],
+  settings: WorkoutSettings,
+): SessionFeedback {
+  return buildSessionFeedback([], plannedSeriesTotal(exercises, settings))
 }

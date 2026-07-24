@@ -15,6 +15,7 @@ import {
   type WorkoutExercise,
   type WorkoutSettings,
 } from './types'
+import type { SessionFeedback } from './utils/sessionFeedback'
 import './App.css'
 
 const DEFAULT_SETTINGS: WorkoutSettings = {
@@ -45,9 +46,16 @@ function App() {
   const [historyStatus, setHistoryStatus] = useState<
     'idle' | 'saving' | 'saved' | 'error'
   >('idle')
+  const [sessionFeedback, setSessionFeedback] = useState<SessionFeedback | null>(
+    null,
+  )
   const historySavedRef = useRef(false)
+  const sessionFeedbackRef = useRef<SessionFeedback | null>(null)
 
-  async function persistHistory(elapsedSeconds: number) {
+  async function persistHistory(
+    elapsedSeconds: number,
+    feedback: SessionFeedback | null,
+  ) {
     if (historySavedRef.current) return
     historySavedRef.current = true
     setHistoryStatus('saving')
@@ -62,6 +70,7 @@ function App() {
         ),
         elapsed_seconds: elapsedSeconds,
         exercises: workout,
+        feedback,
       })
       setHistoryStatus('saved')
     } catch {
@@ -72,6 +81,8 @@ function App() {
   function beginSession() {
     historySavedRef.current = false
     setHistoryStatus('idle')
+    sessionFeedbackRef.current = null
+    setSessionFeedback(null)
     setSessionKey((k) => k + 1)
     const queue = getWarmUpQueue(settings)
     if (queue.length > 0) {
@@ -87,17 +98,26 @@ function App() {
     setScreen('timer')
   }
 
-  async function finishSession(elapsedSeconds: number) {
-    await persistHistory(elapsedSeconds)
+  function finishSession(
+    _elapsedSeconds: number,
+    feedback: SessionFeedback | null,
+  ) {
+    sessionFeedbackRef.current = feedback
+    setSessionFeedback(feedback)
     setScreen('complete')
   }
 
-  function goToCoolDownOrComplete(elapsedSeconds: number) {
+  function goToCoolDownOrComplete(
+    elapsedSeconds: number,
+    feedback: SessionFeedback,
+  ) {
+    sessionFeedbackRef.current = feedback
+    setSessionFeedback(feedback)
     if (getCoolDownQueue(settings).length > 0) {
       setScreen('cooldown')
       return
     }
-    void finishSession(elapsedSeconds)
+    finishSession(elapsedSeconds, feedback)
   }
 
   if (screen === 'builder') {
@@ -149,11 +169,17 @@ function App() {
         timerKey={timerKey}
         encouragementSeed={`session-${sessionKey}`}
         historyStatus={historyStatus}
+        sessionFeedback={sessionFeedback}
         onExit={() => setScreen('builder')}
         onGoToTimer={goToTimer}
         onTimerComplete={goToCoolDownOrComplete}
         onSessionComplete={(elapsed) => {
-          void finishSession(elapsed)
+          finishSession(elapsed, sessionFeedbackRef.current)
+        }}
+        onPersistHistory={(elapsed, feedback) => {
+          sessionFeedbackRef.current = feedback
+          setSessionFeedback(feedback)
+          void persistHistory(elapsed, feedback)
         }}
         onAgain={beginSession}
         onEdit={() => setScreen('builder')}
@@ -169,10 +195,15 @@ type WorkoutSessionProps = {
   timerKey: number
   encouragementSeed: string
   historyStatus: 'idle' | 'saving' | 'saved' | 'error'
+  sessionFeedback: SessionFeedback | null
   onExit: () => void
   onGoToTimer: () => void
-  onTimerComplete: (elapsedSeconds: number) => void
+  onTimerComplete: (elapsedSeconds: number, feedback: SessionFeedback) => void
   onSessionComplete: (elapsedSeconds: number) => void
+  onPersistHistory: (
+    elapsedSeconds: number,
+    feedback: SessionFeedback | null,
+  ) => void
   onAgain: () => void
   onEdit: () => void
 }
@@ -184,10 +215,12 @@ function WorkoutSession({
   timerKey,
   encouragementSeed,
   historyStatus,
+  sessionFeedback,
   onExit,
   onGoToTimer,
   onTimerComplete,
   onSessionComplete,
+  onPersistHistory,
   onAgain,
   onEdit,
 }: WorkoutSessionProps) {
@@ -196,6 +229,8 @@ function WorkoutSession({
   const [warmUpIndex, setWarmUpIndex] = useState(0)
   const [coolDownIndex, setCoolDownIndex] = useState(0)
   const [finalElapsed, setFinalElapsed] = useState(0)
+  const feedbackRef = useRef<SessionFeedback | null>(sessionFeedback)
+  feedbackRef.current = sessionFeedback
   const elapsedSeconds = useElapsedTimer(
     screen === 'warmup' || screen === 'timer' || screen === 'cooldown',
   )
@@ -247,10 +282,11 @@ function WorkoutSession({
         elapsedSeconds={elapsedSeconds}
         encouragementSeed={encouragementSeed}
         onExit={onExit}
-        onComplete={() => {
+        onComplete={(feedback) => {
           const total = elapsedRef.current
           setFinalElapsed(total)
-          onTimerComplete(total)
+          feedbackRef.current = feedback
+          onTimerComplete(total, feedback)
         }}
       />
     )
@@ -286,6 +322,8 @@ function WorkoutSession({
       elapsedSeconds={finalElapsed}
       encouragementSeed={`${encouragementSeed}-complete`}
       historyStatus={historyStatus}
+      feedback={sessionFeedback}
+      onPersist={(feedback) => onPersistHistory(finalElapsed, feedback)}
       onAgain={onAgain}
       onEdit={onEdit}
     />
