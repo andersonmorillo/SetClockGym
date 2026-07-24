@@ -18,6 +18,8 @@ export type WorkoutExercise = {
   notes?: string
   workSeconds: number
   restSeconds: number
+  /** Seconds to get ready before this exercise starts (machine change, setup). */
+  transitionSeconds?: number
 }
 
 export type WarmUpKind = 'upper' | 'legs'
@@ -48,7 +50,7 @@ export type AppScreen =
   | 'cooldown'
   | 'complete'
 
-export type TimerPhase = 'work' | 'rest'
+export type TimerPhase = 'work' | 'rest' | 'transition'
 
 export const UPPER_BODY_WARMUP_VIDEO_ID = 'k9MY1ijAvGo'
 export const LEG_WARMUP_VIDEO_ID = 'QLkLKfL_7F0'

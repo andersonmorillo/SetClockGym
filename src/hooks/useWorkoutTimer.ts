@@ -42,8 +42,51 @@ function restSecondsFor(
   return exercises[index]?.restSeconds ?? settings.restSeconds
 }
 
+function transitionSecondsFor(
+  exercises: WorkoutExercise[],
+  index: number,
+): number {
+  return Math.max(0, exercises[index]?.transitionSeconds ?? 0)
+}
+
 function seriesFor(exercises: WorkoutExercise[], index: number): number {
   return Math.max(1, exercises[index]?.series ?? 1)
+}
+
+function startExerciseState(
+  exercises: WorkoutExercise[],
+  settings: WorkoutSettings,
+  exerciseIndex: number,
+  series: number,
+  round: number,
+  includeTransition: boolean,
+): TimerState {
+  const transition = includeTransition
+    ? transitionSecondsFor(exercises, exerciseIndex)
+    : 0
+  if (transition > 0) {
+    return {
+      phase: 'transition',
+      exerciseIndex,
+      series,
+      round,
+      secondsLeft: transition,
+    }
+  }
+  return {
+    phase: 'work',
+    exerciseIndex,
+    series,
+    round,
+    secondsLeft: workSecondsFor(exercises, exerciseIndex, settings),
+  }
+}
+
+function initialTimerState(
+  exercises: WorkoutExercise[],
+  settings: WorkoutSettings,
+): TimerState {
+  return startExerciseState(exercises, settings, 0, 1, 1, true)
 }
 
 function advanceAfterRest(
@@ -71,22 +114,35 @@ function advanceAfterRest(
   }
 
   if (isLastExercise) {
-    return {
-      phase: 'work',
-      exerciseIndex: 0,
-      series: 1,
-      round: state.round + 1,
-      secondsLeft: workSecondsFor(exercises, 0, settings),
-    }
+    return startExerciseState(
+      exercises,
+      settings,
+      0,
+      1,
+      state.round + 1,
+      true,
+    )
   }
 
-  const nextIndex = state.exerciseIndex + 1
+  return startExerciseState(
+    exercises,
+    settings,
+    state.exerciseIndex + 1,
+    1,
+    state.round,
+    true,
+  )
+}
+
+function advanceAfterTransition(
+  state: TimerState,
+  exercises: WorkoutExercise[],
+  settings: WorkoutSettings,
+): TimerState {
   return {
+    ...state,
     phase: 'work',
-    exerciseIndex: nextIndex,
-    series: 1,
-    round: state.round,
-    secondsLeft: workSecondsFor(exercises, nextIndex, settings),
+    secondsLeft: workSecondsFor(exercises, state.exerciseIndex, settings),
   }
 }
 
@@ -96,6 +152,10 @@ function advance(
   settings: WorkoutSettings,
 ): TimerState | 'done' {
   const exercisesLength = exercises.length
+
+  if (state.phase === 'transition') {
+    return advanceAfterTransition(state, exercises, settings)
+  }
 
   if (state.phase === 'work') {
     const totalSeries = seriesFor(exercises, state.exerciseIndex)
@@ -148,23 +208,24 @@ function skipToNextSeries(
   }
 
   if (isLastExercise) {
-    return {
-      phase: 'work',
-      exerciseIndex: 0,
-      series: 1,
-      round: state.round + 1,
-      secondsLeft: workSecondsFor(exercises, 0, settings),
-    }
+    return startExerciseState(
+      exercises,
+      settings,
+      0,
+      1,
+      state.round + 1,
+      true,
+    )
   }
 
-  const nextIndex = state.exerciseIndex + 1
-  return {
-    phase: 'work',
-    exerciseIndex: nextIndex,
-    series: 1,
-    round: state.round,
-    secondsLeft: workSecondsFor(exercises, nextIndex, settings),
-  }
+  return startExerciseState(
+    exercises,
+    settings,
+    state.exerciseIndex + 1,
+    1,
+    state.round,
+    true,
+  )
 }
 
 function skipToNextExercise(
@@ -180,23 +241,24 @@ function skipToNextExercise(
   }
 
   if (isLastExercise) {
-    return {
-      phase: 'work',
-      exerciseIndex: 0,
-      series: 1,
-      round: state.round + 1,
-      secondsLeft: workSecondsFor(exercises, 0, settings),
-    }
+    return startExerciseState(
+      exercises,
+      settings,
+      0,
+      1,
+      state.round + 1,
+      true,
+    )
   }
 
-  const nextIndex = state.exerciseIndex + 1
-  return {
-    phase: 'work',
-    exerciseIndex: nextIndex,
-    series: 1,
-    round: state.round,
-    secondsLeft: workSecondsFor(exercises, nextIndex, settings),
-  }
+  return startExerciseState(
+    exercises,
+    settings,
+    state.exerciseIndex + 1,
+    1,
+    state.round,
+    true,
+  )
 }
 
 function leavesExercise(
@@ -223,13 +285,9 @@ export function useWorkoutTimer({
   settings,
   onComplete,
 }: UseWorkoutTimerArgs) {
-  const [state, setState] = useState<TimerState>({
-    phase: 'work',
-    exerciseIndex: 0,
-    series: 1,
-    round: 1,
-    secondsLeft: workSecondsFor(exercises, 0, settings),
-  })
+  const [state, setState] = useState<TimerState>(() =>
+    initialTimerState(exercises, settings),
+  )
   const [running, setRunning] = useState(true)
   const [sessionFeedback, setSessionFeedback] = useState<SessionFeedback>(() =>
     emptyPlannedFeedback(exercises, settings),
@@ -260,6 +318,24 @@ export function useWorkoutTimer({
   exercisesRef.current = exercises
   const settingsRef = useRef(settings)
   settingsRef.current = settings
+  const currentInstanceIdRef = useRef(
+    exercises[0]?.instanceId ?? '',
+  )
+
+  // Keep exerciseIndex aligned when the list is reordered mid-session.
+  useEffect(() => {
+    const currentId = currentInstanceIdRef.current
+    if (!currentId) return
+    const nextIndex = exercises.findIndex(
+      (item) => item.instanceId === currentId,
+    )
+    if (nextIndex < 0) return
+    setState((prev) =>
+      prev.exerciseIndex === nextIndex
+        ? prev
+        : { ...prev, exerciseIndex: nextIndex },
+    )
+  }, [exercises])
 
   function ensureDraft(forState: TimerState = state): ExerciseDraft {
     const list = exercisesRef.current
@@ -337,14 +413,21 @@ export function useWorkoutTimer({
 
     if (next === 'done') {
       completingRef.current = true
+      // Rest already played exerciseEnd when the last series finished.
+      if (prev.phase === 'work' || prev.phase === 'transition') {
+        playBeep('exerciseEnd')
+      }
       window.setTimeout(() => {
         const feedback = rebuildSessionFeedback(savedRef.current)
         setRunning(false)
-        playBeep('seriesEnd')
         onCompleteRef.current(feedback)
       }, 0)
       return { ...prev, secondsLeft: 0 }
     }
+
+    currentInstanceIdRef.current =
+      exercisesRef.current[next.exerciseIndex]?.instanceId ??
+      currentInstanceIdRef.current
 
     window.setTimeout(() => {
       rebuildSessionFeedback(savedRef.current)
@@ -353,6 +436,8 @@ export function useWorkoutTimer({
   }
 
   useEffect(() => {
+    const item = exercises[state.exerciseIndex]
+    if (item) currentInstanceIdRef.current = item.instanceId
     ensureDraft(state)
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [state.exerciseIndex])
@@ -362,7 +447,8 @@ export function useWorkoutTimer({
     const { phase, series, exerciseIndex, round } = state
 
     if (!prev.primed) {
-      playBeep('seriesStart')
+      if (phase === 'work') playBeep('exerciseStart')
+      else if (phase === 'transition') playBeep('phase')
       prevSeriesCueRef.current = {
         primed: true,
         phase,
@@ -373,18 +459,40 @@ export function useWorkoutTimer({
       return
     }
 
+    const exerciseChanged = exerciseIndex !== prev.exerciseIndex
     const seriesIdentityChanged =
-      series !== prev.series ||
-      exerciseIndex !== prev.exerciseIndex ||
-      round !== prev.round
+      series !== prev.series || exerciseChanged || round !== prev.round
 
     const leftWork =
       prev.phase === 'work' && (phase !== 'work' || seriesIdentityChanged)
     const enteredWork =
       phase === 'work' && (prev.phase !== 'work' || seriesIdentityChanged)
+    const enteredTransition =
+      phase === 'transition' && prev.phase !== 'transition'
+    const finishedLastSeries =
+      leftWork &&
+      prev.series >= seriesFor(exercisesRef.current, prev.exerciseIndex)
 
-    if (leftWork) playBeep('seriesEnd')
-    if (enteredWork) playBeep('seriesStart')
+    // One clear end cue per exercise (not again when rest rolls into the next move)
+    if (
+      exerciseChanged &&
+      (prev.phase === 'work' || prev.phase === 'transition')
+    ) {
+      playBeep('exerciseEnd')
+    } else if (!exerciseChanged && finishedLastSeries) {
+      playBeep('exerciseEnd')
+    } else if (leftWork) {
+      playBeep('seriesEnd')
+    }
+
+    if (enteredWork && (exerciseChanged || prev.phase === 'transition')) {
+      playBeep('exerciseStart')
+    } else if (enteredWork) {
+      playBeep('seriesStart')
+    } else if (enteredTransition) {
+      // Transition means the next exercise is about to start
+      playBeep('phase')
+    }
 
     if (leftWork || enteredWork || phase !== prev.phase) {
       lastTickBeepRef.current = null
@@ -403,11 +511,16 @@ export function useWorkoutTimer({
     if (!running || completingRef.current) return
     if (state.secondsLeft <= 3 && state.secondsLeft >= 1) {
       if (lastTickBeepRef.current !== state.secondsLeft) {
-        playBeep('tick')
+        // Louder ticks when work/transition is about to end (start or finish cue)
+        const urgent =
+          state.phase === 'work' ||
+          state.phase === 'transition' ||
+          state.phase === 'rest'
+        playBeep(urgent && state.secondsLeft === 1 ? 'tickUrgent' : 'tick')
         lastTickBeepRef.current = state.secondsLeft
       }
     }
-  }, [running, state.secondsLeft])
+  }, [running, state.secondsLeft, state.phase])
 
   useEffect(() => {
     if (!running || completingRef.current) return
@@ -432,7 +545,7 @@ export function useWorkoutTimer({
           return resolveLeavingExercise(prev, next)
         }
 
-        return next
+        return next === 'done' ? prev : next
       })
     }, 1000)
 
@@ -465,6 +578,7 @@ export function useWorkoutTimer({
     secondsLeft: state.secondsLeft,
     running,
     current,
+    exerciseIndex: state.exerciseIndex,
     progress: Math.min(completedSteps / totalSteps, 1),
     sessionFeedback,
     toggleRunning: () => {
@@ -479,6 +593,25 @@ export function useWorkoutTimer({
           closePauseClock(draft)
         }
         return !value
+      })
+    },
+    pauseCountdown: () => {
+      if (completingRef.current) return
+      setRunning((value) => {
+        if (!value) return value
+        const draft = ensureDraft()
+        draft.pauseCount += 1
+        pauseStartedAtRef.current = Date.now()
+        return false
+      })
+    },
+    resumeCountdown: () => {
+      if (completingRef.current) return
+      setRunning((value) => {
+        if (value) return value
+        const draft = ensureDraft()
+        closePauseClock(draft)
+        return true
       })
     },
     skipRest: () => {
@@ -496,6 +629,17 @@ export function useWorkoutTimer({
           return resolveLeavingExercise(prev, next)
         }
         return next === 'done' ? prev : next
+      })
+    },
+    skipTransition: () => {
+      if (completingRef.current) return
+      setState((prev) => {
+        if (prev.phase !== 'transition') return prev
+        return advanceAfterTransition(
+          prev,
+          exercisesRef.current,
+          settingsRef.current,
+        )
       })
     },
     skipSeries: () => {
@@ -525,6 +669,25 @@ export function useWorkoutTimer({
           prev,
           exercisesRef.current,
           settingsRef.current,
+        )
+        return resolveLeavingExercise(prev, next)
+      })
+    },
+    jumpToExercise: (instanceId: string) => {
+      if (completingRef.current) return
+      setState((prev) => {
+        const list = exercisesRef.current
+        const targetIndex = list.findIndex(
+          (item) => item.instanceId === instanceId,
+        )
+        if (targetIndex < 0 || targetIndex === prev.exerciseIndex) return prev
+        const next = startExerciseState(
+          list,
+          settingsRef.current,
+          targetIndex,
+          1,
+          prev.round,
+          true,
         )
         return resolveLeavingExercise(prev, next)
       })

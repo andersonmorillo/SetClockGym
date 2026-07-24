@@ -676,6 +676,10 @@ button.ghost {
   --phase: var(--rest);
 }
 
+.timer-screen.transition {
+  --phase: var(--accent);
+}
+
 .timer-top {
   width: 100%;
   display: flex;
@@ -685,6 +689,98 @@ button.ghost {
   margin-bottom: 0;
   flex-wrap: wrap;
   flex-shrink: 0;
+}
+
+.timer-top .elapsed {
+  flex: 1;
+  text-align: center;
+}
+
+.routine-overlay {
+  position: fixed;
+  inset: 0;
+  z-index: 40;
+  display: flex;
+  align-items: flex-end;
+  justify-content: center;
+  padding: 0.75rem;
+  background: rgba(0, 0, 0, 0.62);
+  box-sizing: border-box;
+}
+
+.routine-panel {
+  width: min(560px, 100%);
+  max-height: min(85dvh, 720px);
+  overflow: auto;
+  border-radius: calc(var(--radius) + 2px);
+  border: 1px solid var(--line);
+  background: linear-gradient(180deg, var(--surface) 0%, var(--bg-elevated) 100%);
+  box-shadow: var(--shadow);
+  padding: 0.9rem 0.9rem 1.1rem;
+  text-align: left;
+}
+
+.routine-panel-top {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.75rem;
+  margin-bottom: 0.35rem;
+}
+
+.routine-panel-top h2 {
+  margin: 0;
+  font-size: 1.25rem;
+  text-transform: uppercase;
+}
+
+.routine-hint {
+  margin: 0 0 0.75rem;
+  font-size: 0.85rem;
+}
+
+.routine-list {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 0.55rem;
+}
+
+.routine-list li {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.55rem;
+  padding: 0.65rem 0.7rem;
+  border: 1px solid var(--line);
+  border-radius: var(--radius);
+  background: rgba(0, 0, 0, 0.18);
+}
+
+.routine-list li.is-current {
+  border-color: color-mix(in srgb, var(--accent) 55%, var(--line));
+  background: color-mix(in srgb, var(--accent) 12%, transparent);
+}
+
+.routine-item-info {
+  display: flex;
+  flex-direction: column;
+  gap: 0.2rem;
+  min-width: 0;
+  flex: 1;
+}
+
+.routine-item-info strong {
+  font-size: 0.95rem;
+}
+
+.routine-item-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.35rem;
 }
 
 .timer-meta {
@@ -732,11 +828,12 @@ button.ghost {
 }
 
 .timer-image {
-  width: min(140px, 32vw);
-  height: min(140px, 32vw);
-  margin: 0.15rem 0;
-  object-fit: cover;
+  width: min(320px, 72vw);
+  height: min(320px, 72vw);
+  margin: 0.2rem 0;
+  object-fit: contain;
   border: 2px solid color-mix(in srgb, var(--phase) 45%, transparent);
+  background: rgba(0, 0, 0, 0.28);
   flex-shrink: 1;
 }
 
@@ -801,7 +898,7 @@ button.ghost {
 
 .skip-actions {
   display: grid;
-  grid-template-columns: repeat(3, 1fr);
+  grid-template-columns: repeat(2, 1fr);
   gap: 0.4rem;
   justify-content: center;
   width: 100%;
@@ -1285,9 +1382,9 @@ button.danger:disabled {
   }
 
   .timer-image {
-    width: min(96px, 28vw);
-    height: min(96px, 28vw);
-    margin: 0;
+    width: min(260px, 78vw);
+    height: min(260px, 78vw);
+    margin: 0.1rem 0;
   }
 
   .timer-screen h2 {
@@ -1325,8 +1422,18 @@ button.danger:disabled {
 
   .skip-actions {
     display: grid;
-    grid-template-columns: repeat(3, 1fr);
+    grid-template-columns: repeat(2, 1fr);
     gap: 0.35rem;
+  }
+
+  .routine-overlay {
+    align-items: stretch;
+    padding: 0.5rem;
+  }
+
+  .routine-panel {
+    max-height: none;
+    height: 100%;
   }
 
   .skip-actions button {

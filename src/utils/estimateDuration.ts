@@ -23,6 +23,8 @@ export function estimateWorkoutSeconds(
       const series = Math.max(1, item.series || 1)
       const work = item.workSeconds || settings.workSeconds
       const rest = item.restSeconds ?? settings.restSeconds
+      const transition = Math.max(0, item.transitionSeconds ?? 0)
+      total += transition
       total += series * work
 
       const isLastExercise = index === workout.length - 1

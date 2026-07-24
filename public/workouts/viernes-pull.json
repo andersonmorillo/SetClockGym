@@ -1,6 +1,6 @@
 {
   "name": "Viernes — Pull",
-  "savedAt": "2026-07-24T20:35:47.882759+00:00",
+  "savedAt": "2026-07-24T23:03:31.738433+00:00",
   "settings": {
     "workSeconds": 43,
     "restSeconds": 77,
@@ -26,10 +26,11 @@
         "attribution": "© Gym visual — https://gymvisual.com/"
       },
       "series": 4,
-      "reps": 10,
+      "reps": 6,
       "repsLabel": "6-10",
       "workSeconds": 38,
-      "restSeconds": 61
+      "restSeconds": 61,
+      "transitionSeconds": 0
     },
     {
       "instanceId": "viernes-wide",
@@ -46,10 +47,11 @@
         "attribution": "© Gym visual — https://gymvisual.com/"
       },
       "series": 3,
-      "reps": 8,
-      "repsLabel": "8",
+      "reps": 5,
+      "repsLabel": "5-8",
       "workSeconds": 37,
-      "restSeconds": 61
+      "restSeconds": 61,
+      "transitionSeconds": 0
     },
     {
       "instanceId": "viernes-commando",
@@ -65,12 +67,13 @@
         "gifUrl": "https://raw.githubusercontent.com/hasaneyldrm/exercises-dataset/main/videos/0651-0V2YQjW.gif",
         "attribution": "© Gym visual — https://gymvisual.com/"
       },
-      "series": 3,
-      "reps": 8,
-      "repsLabel": "8",
+      "series": 2,
+      "reps": 5,
+      "repsLabel": "5-8",
       "notes": "Commando pull-ups (closest match: neutral grip)",
       "workSeconds": 40,
-      "restSeconds": 71
+      "restSeconds": 72,
+      "transitionSeconds": 0
     },
     {
       "instanceId": "viernes-row",
@@ -90,7 +93,8 @@
       "reps": 12,
       "repsLabel": "12",
       "workSeconds": 48,
-      "restSeconds": 91
+      "restSeconds": 91,
+      "transitionSeconds": 0
     },
     {
       "instanceId": "viernes-hanging",
@@ -110,7 +114,8 @@
       "reps": 12,
       "repsLabel": "12",
       "workSeconds": 51,
-      "restSeconds": 101
+      "restSeconds": 101,
+      "transitionSeconds": 0
     }
   ]
 }

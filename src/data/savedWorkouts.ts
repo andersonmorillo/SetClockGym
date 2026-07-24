@@ -60,6 +60,7 @@ export function normalizeWorkout(workout: SavedWorkout): SavedWorkout {
       reps: Math.max(0, item.reps ?? 0),
       repsLabel: item.repsLabel,
       notes: item.notes,
+      transitionSeconds: Math.max(0, item.transitionSeconds ?? 0),
       exercise: {
         id: item.exercise.id,
         name: item.exercise.name,

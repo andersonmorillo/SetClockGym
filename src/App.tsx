@@ -171,6 +171,7 @@ function App() {
         historyStatus={historyStatus}
         sessionFeedback={sessionFeedback}
         onExit={() => setScreen('builder')}
+        onWorkoutChange={setWorkout}
         onGoToTimer={goToTimer}
         onTimerComplete={goToCoolDownOrComplete}
         onSessionComplete={(elapsed) => {
@@ -197,6 +198,7 @@ type WorkoutSessionProps = {
   historyStatus: 'idle' | 'saving' | 'saved' | 'error'
   sessionFeedback: SessionFeedback | null
   onExit: () => void
+  onWorkoutChange: (workout: WorkoutExercise[]) => void
   onGoToTimer: () => void
   onTimerComplete: (elapsedSeconds: number, feedback: SessionFeedback) => void
   onSessionComplete: (elapsedSeconds: number) => void
@@ -217,6 +219,7 @@ function WorkoutSession({
   historyStatus,
   sessionFeedback,
   onExit,
+  onWorkoutChange,
   onGoToTimer,
   onTimerComplete,
   onSessionComplete,
@@ -281,6 +284,7 @@ function WorkoutSession({
         settings={settings}
         elapsedSeconds={elapsedSeconds}
         encouragementSeed={encouragementSeed}
+        onWorkoutChange={onWorkoutChange}
         onExit={onExit}
         onComplete={(feedback) => {
           const total = elapsedRef.current

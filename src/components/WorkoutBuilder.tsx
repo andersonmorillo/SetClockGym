@@ -259,6 +259,7 @@ export function WorkoutBuilder({
         repsLabel: '10',
         workSeconds: settings.workSeconds,
         restSeconds: settings.restSeconds,
+        transitionSeconds: 0,
       },
     ])
   }
@@ -282,7 +283,13 @@ export function WorkoutBuilder({
     patch: Partial<
       Pick<
         WorkoutExercise,
-        'series' | 'reps' | 'repsLabel' | 'notes' | 'workSeconds' | 'restSeconds'
+        | 'series'
+        | 'reps'
+        | 'repsLabel'
+        | 'notes'
+        | 'workSeconds'
+        | 'restSeconds'
+        | 'transitionSeconds'
       >
     >,
   ) {
@@ -306,6 +313,10 @@ export function WorkoutBuilder({
             patch.restSeconds !== undefined
               ? Math.max(0, patch.restSeconds)
               : item.restSeconds,
+          transitionSeconds:
+            patch.transitionSeconds !== undefined
+              ? Math.max(0, patch.transitionSeconds)
+              : item.transitionSeconds,
         }
       }),
     )
@@ -625,6 +636,19 @@ export function WorkoutBuilder({
                           onChange={(e) =>
                             updateItem(item.instanceId, {
                               restSeconds: Number(e.target.value) || 0,
+                            })
+                          }
+                        />
+                      </label>
+                      <label>
+                        Transition
+                        <input
+                          type="number"
+                          min={0}
+                          value={item.transitionSeconds ?? 0}
+                          onChange={(e) =>
+                            updateItem(item.instanceId, {
+                              transitionSeconds: Number(e.target.value) || 0,
                             })
                           }
                         />
