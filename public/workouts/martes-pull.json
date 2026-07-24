@@ -1,0 +1,98 @@
+{
+  "name": "Martes — Pull",
+  "savedAt": "2026-07-23T23:58:20.591Z",
+  "settings": {
+    "workSeconds": 40,
+    "restSeconds": 20,
+    "rounds": 1,
+    "includeUpperWarmUp": true,
+    "includeLegWarmUp": false,
+    "includeUpperCoolDown": true,
+    "includeLegCoolDown": false
+  },
+  "exercises": [
+    {
+      "instanceId": "pull-pullups",
+      "exercise": {
+        "id": "0652",
+        "name": "pull-up",
+        "equipment": "body weight",
+        "primaryMuscles": [
+          "lats"
+        ],
+        "category": "back",
+        "image": "https://raw.githubusercontent.com/hasaneyldrm/exercises-dataset/main/images/0652-lBDjFxJ.jpg",
+        "gifUrl": "https://raw.githubusercontent.com/hasaneyldrm/exercises-dataset/main/videos/0652-lBDjFxJ.gif",
+        "attribution": "© Gym visual — https://gymvisual.com/"
+      },
+      "series": 4,
+      "reps": 10,
+      "repsLabel": "6-10",
+      "notes": "Última serie → al fallo",
+      "workSeconds": 40,
+      "restSeconds": 20
+    },
+    {
+      "instanceId": "pull-chinups",
+      "exercise": {
+        "id": "1326",
+        "name": "chin-up",
+        "equipment": "body weight",
+        "primaryMuscles": [
+          "lats"
+        ],
+        "category": "back",
+        "image": "https://raw.githubusercontent.com/hasaneyldrm/exercises-dataset/main/images/1326-T2mxWqc.jpg",
+        "gifUrl": "https://raw.githubusercontent.com/hasaneyldrm/exercises-dataset/main/videos/1326-T2mxWqc.gif",
+        "attribution": "© Gym visual — https://gymvisual.com/"
+      },
+      "series": 3,
+      "reps": 10,
+      "repsLabel": "6-10",
+      "workSeconds": 40,
+      "restSeconds": 20
+    },
+    {
+      "instanceId": "pull-commando",
+      "exercise": {
+        "id": "0651",
+        "name": "pull up (neutral grip)",
+        "equipment": "body weight",
+        "primaryMuscles": [
+          "lats"
+        ],
+        "category": "back",
+        "image": "https://raw.githubusercontent.com/hasaneyldrm/exercises-dataset/main/images/0651-0V2YQjW.jpg",
+        "gifUrl": "https://raw.githubusercontent.com/hasaneyldrm/exercises-dataset/main/videos/0651-0V2YQjW.gif",
+        "attribution": "© Gym visual — https://gymvisual.com/"
+      },
+      "series": 3,
+      "reps": 15,
+      "repsLabel": "10-15",
+      "notes": "Commando pull-ups (closest match: neutral grip)",
+      "workSeconds": 40,
+      "restSeconds": 20
+    },
+    {
+      "instanceId": "pull-deadhang",
+      "exercise": {
+        "id": "2333",
+        "name": "arm slingers hanging straight legs",
+        "equipment": "body weight",
+        "primaryMuscles": [
+          "abs"
+        ],
+        "category": "waist",
+        "image": "https://raw.githubusercontent.com/hasaneyldrm/exercises-dataset/main/images/2333-PXTIwgu.jpg",
+        "gifUrl": "https://raw.githubusercontent.com/hasaneyldrm/exercises-dataset/main/videos/2333-PXTIwgu.gif",
+        "attribution": "© Gym visual — https://gymvisual.com/"
+      },
+      "series": 2,
+      "reps": 0,
+      "repsLabel": "30-45 s",
+      "notes": "Dead hang hold",
+      "workSeconds": 45,
+      "restSeconds": 30
+    }
+  ]
+}

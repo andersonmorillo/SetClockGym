@@ -1,0 +1,35 @@
+{
+  "name": "Example upper body",
+  "savedAt": "2026-07-23T00:00:00.000Z",
+  "settings": {
+    "workSeconds": 40,
+    "restSeconds": 20,
+    "rounds": 1,
+    "includeUpperWarmUp": true,
+    "includeLegWarmUp": false,
+    "includeUpperCoolDown": true,
+    "includeLegCoolDown": false
+  },
+  "exercises": [
+    {
+      "instanceId": "example-0001",
+      "series": 3,
+      "reps": 12,
+      "repsLabel": "8-12",
+      "workSeconds": 40,
+      "restSeconds": 20,
+      "exercise": {
+        "id": "0001",
+        "name": "3/4 sit-up",
+        "equipment": "body weight",
+        "primaryMuscles": [
+          "abs"
+        ],
+        "category": "waist",
+        "image": "https://raw.githubusercontent.com/hasaneyldrm/exercises-dataset/main/images/0001-2gPfomN.jpg",
+        "gifUrl": "https://raw.githubusercontent.com/hasaneyldrm/exercises-dataset/main/videos/0001-2gPfomN.gif",
+        "attribution": "© Gym visual — https://gymvisual.com/"
+      }
+    }
+  ]
+}

@@ -1,0 +1,116 @@
+{
+  "name": "Viernes — Pull",
+  "savedAt": "2026-07-24T00:39:49.668Z",
+  "settings": {
+    "workSeconds": 40,
+    "restSeconds": 20,
+    "rounds": 1,
+    "includeUpperWarmUp": true,
+    "includeLegWarmUp": false,
+    "includeUpperCoolDown": true,
+    "includeLegCoolDown": false
+  },
+  "exercises": [
+    {
+      "instanceId": "viernes-chin",
+      "exercise": {
+        "id": "1326",
+        "name": "chin-up",
+        "equipment": "body weight",
+        "primaryMuscles": [
+          "lats"
+        ],
+        "category": "back",
+        "image": "https://raw.githubusercontent.com/hasaneyldrm/exercises-dataset/main/images/1326-T2mxWqc.jpg",
+        "gifUrl": "https://raw.githubusercontent.com/hasaneyldrm/exercises-dataset/main/videos/1326-T2mxWqc.gif",
+        "attribution": "© Gym visual — https://gymvisual.com/"
+      },
+      "series": 4,
+      "reps": 10,
+      "repsLabel": "6-10",
+      "workSeconds": 40,
+      "restSeconds": 20
+    },
+    {
+      "instanceId": "viernes-wide",
+      "exercise": {
+        "id": "1429",
+        "name": "wide grip pull-up",
+        "equipment": "body weight",
+        "primaryMuscles": [
+          "lats"
+        ],
+        "category": "back",
+        "image": "https://raw.githubusercontent.com/hasaneyldrm/exercises-dataset/main/images/1429-Qqi7bko.jpg",
+        "gifUrl": "https://raw.githubusercontent.com/hasaneyldrm/exercises-dataset/main/videos/1429-Qqi7bko.gif",
+        "attribution": "© Gym visual — https://gymvisual.com/"
+      },
+      "series": 3,
+      "reps": 8,
+      "repsLabel": "8",
+      "workSeconds": 40,
+      "restSeconds": 20
+    },
+    {
+      "instanceId": "viernes-commando",
+      "exercise": {
+        "id": "0651",
+        "name": "pull up (neutral grip)",
+        "equipment": "body weight",
+        "primaryMuscles": [
+          "lats"
+        ],
+        "category": "back",
+        "image": "https://raw.githubusercontent.com/hasaneyldrm/exercises-dataset/main/images/0651-0V2YQjW.jpg",
+        "gifUrl": "https://raw.githubusercontent.com/hasaneyldrm/exercises-dataset/main/videos/0651-0V2YQjW.gif",
+        "attribution": "© Gym visual — https://gymvisual.com/"
+      },
+      "series": 3,
+      "reps": 8,
+      "repsLabel": "8",
+      "notes": "Commando pull-ups (closest match: neutral grip)",
+      "workSeconds": 40,
+      "restSeconds": 20
+    },
+    {
+      "instanceId": "viernes-row",
+      "exercise": {
+        "id": "0499",
+        "name": "inverted row",
+        "equipment": "body weight",
+        "primaryMuscles": [
+          "upper back"
+        ],
+        "category": "back",
+        "image": "https://raw.githubusercontent.com/hasaneyldrm/exercises-dataset/main/images/0499-bZGHsAZ.jpg",
+        "gifUrl": "https://raw.githubusercontent.com/hasaneyldrm/exercises-dataset/main/videos/0499-bZGHsAZ.gif",
+        "attribution": "© Gym visual — https://gymvisual.com/"
+      },
+      "series": 3,
+      "reps": 12,
+      "repsLabel": "12",
+      "workSeconds": 40,
+      "restSeconds": 20
+    },
+    {
+      "instanceId": "viernes-hanging",
+      "exercise": {
+        "id": "0472",
+        "name": "hanging leg raise",
+        "equipment": "body weight",
+        "primaryMuscles": [
+          "abs"
+        ],
+        "category": "waist",
+        "image": "https://raw.githubusercontent.com/hasaneyldrm/exercises-dataset/main/images/0472-I3tsCnC.jpg",
+        "gifUrl": "https://raw.githubusercontent.com/hasaneyldrm/exercises-dataset/main/videos/0472-I3tsCnC.gif",
+        "attribution": "© Gym visual — https://gymvisual.com/"
+      },
+      "series": 3,
+      "reps": 12,
+      "repsLabel": "12",
+      "workSeconds": 40,
+      "restSeconds": 20
+    }
+  ]
+}

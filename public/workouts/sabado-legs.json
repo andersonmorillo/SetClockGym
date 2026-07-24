@@ -1,0 +1,140 @@
+{
+  "name": "Sábado — Pierna",
+  "savedAt": "2026-07-24T00:39:49.669Z",
+  "settings": {
+    "workSeconds": 40,
+    "restSeconds": 20,
+    "rounds": 1,
+    "includeUpperWarmUp": false,
+    "includeLegWarmUp": true,
+    "includeUpperCoolDown": false,
+    "includeLegCoolDown": true
+  },
+  "exercises": [
+    {
+      "instanceId": "sabado-squat",
+      "exercise": {
+        "id": "0042",
+        "name": "barbell front squat",
+        "equipment": "barbell",
+        "primaryMuscles": [
+          "glutes"
+        ],
+        "category": "upper legs",
+        "image": "https://raw.githubusercontent.com/hasaneyldrm/exercises-dataset/main/images/0042-zG0zs85.jpg",
+        "gifUrl": "https://raw.githubusercontent.com/hasaneyldrm/exercises-dataset/main/videos/0042-zG0zs85.gif",
+        "attribution": "© Gym visual — https://gymvisual.com/"
+      },
+      "series": 4,
+      "reps": 10,
+      "repsLabel": "10",
+      "notes": "Front squat (or use goblet squat)",
+      "workSeconds": 40,
+      "restSeconds": 20
+    },
+    {
+      "instanceId": "sabado-lunge",
+      "exercise": {
+        "id": "1460",
+        "name": "walking lunge",
+        "equipment": "body weight",
+        "primaryMuscles": [
+          "glutes"
+        ],
+        "category": "upper legs",
+        "image": "https://raw.githubusercontent.com/hasaneyldrm/exercises-dataset/main/images/1460-IZVHb27.jpg",
+        "gifUrl": "https://raw.githubusercontent.com/hasaneyldrm/exercises-dataset/main/videos/1460-IZVHb27.gif",
+        "attribution": "© Gym visual — https://gymvisual.com/"
+      },
+      "series": 3,
+      "reps": 12,
+      "repsLabel": "12/leg",
+      "notes": "12 por pierna",
+      "workSeconds": 40,
+      "restSeconds": 20
+    },
+    {
+      "instanceId": "sabado-hip",
+      "exercise": {
+        "id": "1409",
+        "name": "barbell glute bridge",
+        "equipment": "barbell",
+        "primaryMuscles": [
+          "glutes"
+        ],
+        "category": "upper legs",
+        "image": "https://raw.githubusercontent.com/hasaneyldrm/exercises-dataset/main/images/1409-qKBpF7I.jpg",
+        "gifUrl": "https://raw.githubusercontent.com/hasaneyldrm/exercises-dataset/main/videos/1409-qKBpF7I.gif",
+        "attribution": "© Gym visual — https://gymvisual.com/"
+      },
+      "series": 3,
+      "reps": 10,
+      "repsLabel": "10",
+      "notes": "Hip thrust substitute: glute bridge",
+      "workSeconds": 40,
+      "restSeconds": 20
+    },
+    {
+      "instanceId": "sabado-nordic",
+      "exercise": {
+        "id": "1417",
+        "name": "exercise ball one legged diagonal kick hamstring curl",
+        "equipment": "stability ball",
+        "primaryMuscles": [
+          "glutes"
+        ],
+        "category": "upper legs",
+        "image": "https://raw.githubusercontent.com/hasaneyldrm/exercises-dataset/main/images/1417-GOJKFfO.jpg",
+        "gifUrl": "https://raw.githubusercontent.com/hasaneyldrm/exercises-dataset/main/videos/1417-GOJKFfO.gif",
+        "attribution": "© Gym visual — https://gymvisual.com/"
+      },
+      "series": 3,
+      "reps": 8,
+      "repsLabel": "6-8",
+      "notes": "Nordic curl asistido (closest match)",
+      "workSeconds": 40,
+      "restSeconds": 20
+    },
+    {
+      "instanceId": "sabado-calf",
+      "exercise": {
+        "id": "1373",
+        "name": "bodyweight standing calf raise",
+        "equipment": "body weight",
+        "primaryMuscles": [
+          "calves"
+        ],
+        "category": "lower legs",
+        "image": "https://raw.githubusercontent.com/hasaneyldrm/exercises-dataset/main/images/1373-bJYHBIN.jpg",
+        "gifUrl": "https://raw.githubusercontent.com/hasaneyldrm/exercises-dataset/main/videos/1373-bJYHBIN.gif",
+        "attribution": "© Gym visual — https://gymvisual.com/"
+      },
+      "series": 4,
+      "reps": 20,
+      "repsLabel": "20",
+      "workSeconds": 40,
+      "restSeconds": 20
+    },
+    {
+      "instanceId": "sabado-plank",
+      "exercise": {
+        "id": "3665",
+        "name": "power point plank",
+        "equipment": "body weight",
+        "primaryMuscles": [
+          "abs"
+        ],
+        "category": "waist",
+        "image": "https://raw.githubusercontent.com/hasaneyldrm/exercises-dataset/main/images/3665-hCjGsRQ.jpg",
+        "gifUrl": "https://raw.githubusercontent.com/hasaneyldrm/exercises-dataset/main/videos/3665-hCjGsRQ.gif",
+        "attribution": "© Gym visual — https://gymvisual.com/"
+      },
+      "series": 3,
+      "reps": 0,
+      "repsLabel": "60 s",
+      "notes": "Hold plank",
+      "workSeconds": 60,
+      "restSeconds": 30
+    }
+  ]
+}

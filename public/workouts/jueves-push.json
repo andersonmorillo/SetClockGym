@@ -1,0 +1,117 @@
+{
+  "name": "Jueves — Push",
+  "savedAt": "2026-07-24T00:39:49.666Z",
+  "settings": {
+    "workSeconds": 40,
+    "restSeconds": 20,
+    "rounds": 1,
+    "includeUpperWarmUp": true,
+    "includeLegWarmUp": false,
+    "includeUpperCoolDown": true,
+    "includeLegCoolDown": false
+  },
+  "exercises": [
+    {
+      "instanceId": "jueves-bar-dip",
+      "exercise": {
+        "id": "2462",
+        "name": "chest dip on straight bar",
+        "equipment": "body weight",
+        "primaryMuscles": [
+          "pectorals"
+        ],
+        "category": "chest",
+        "image": "https://raw.githubusercontent.com/hasaneyldrm/exercises-dataset/main/images/2462-LQFOrMn.jpg",
+        "gifUrl": "https://raw.githubusercontent.com/hasaneyldrm/exercises-dataset/main/videos/2462-LQFOrMn.gif",
+        "attribution": "© Gym visual — https://gymvisual.com/"
+      },
+      "series": 4,
+      "reps": 8,
+      "repsLabel": "8",
+      "notes": "Straight bar dips",
+      "workSeconds": 40,
+      "restSeconds": 20
+    },
+    {
+      "instanceId": "jueves-archer",
+      "exercise": {
+        "id": "3294",
+        "name": "archer push up",
+        "equipment": "body weight",
+        "primaryMuscles": [
+          "pectorals"
+        ],
+        "category": "chest",
+        "image": "https://raw.githubusercontent.com/hasaneyldrm/exercises-dataset/main/images/3294-A9qxk2F.jpg",
+        "gifUrl": "https://raw.githubusercontent.com/hasaneyldrm/exercises-dataset/main/videos/3294-A9qxk2F.gif",
+        "attribution": "© Gym visual — https://gymvisual.com/"
+      },
+      "series": 3,
+      "reps": 8,
+      "repsLabel": "8",
+      "workSeconds": 40,
+      "restSeconds": 20
+    },
+    {
+      "instanceId": "jueves-decline",
+      "exercise": {
+        "id": "0279",
+        "name": "decline push-up",
+        "equipment": "body weight",
+        "primaryMuscles": [
+          "pectorals"
+        ],
+        "category": "chest",
+        "image": "https://raw.githubusercontent.com/hasaneyldrm/exercises-dataset/main/images/0279-i5cEhka.jpg",
+        "gifUrl": "https://raw.githubusercontent.com/hasaneyldrm/exercises-dataset/main/videos/0279-i5cEhka.gif",
+        "attribution": "© Gym visual — https://gymvisual.com/"
+      },
+      "series": 3,
+      "reps": 12,
+      "repsLabel": "12",
+      "workSeconds": 40,
+      "restSeconds": 20
+    },
+    {
+      "instanceId": "jueves-bench-dip",
+      "exercise": {
+        "id": "0129",
+        "name": "bench dip (knees bent)",
+        "equipment": "body weight",
+        "primaryMuscles": [
+          "triceps"
+        ],
+        "category": "upper arms",
+        "image": "https://raw.githubusercontent.com/hasaneyldrm/exercises-dataset/main/images/0129-RrLske5.jpg",
+        "gifUrl": "https://raw.githubusercontent.com/hasaneyldrm/exercises-dataset/main/videos/0129-RrLske5.gif",
+        "attribution": "© Gym visual — https://gymvisual.com/"
+      },
+      "series": 2,
+      "reps": 0,
+      "repsLabel": "AMRAP",
+      "workSeconds": 40,
+      "restSeconds": 20
+    },
+    {
+      "instanceId": "jueves-pike",
+      "exercise": {
+        "id": "1296",
+        "name": "exercise ball pike push up",
+        "equipment": "stability ball",
+        "primaryMuscles": [
+          "pectorals"
+        ],
+        "category": "chest",
+        "image": "https://raw.githubusercontent.com/hasaneyldrm/exercises-dataset/main/images/1296-sVvXT5J.jpg",
+        "gifUrl": "https://raw.githubusercontent.com/hasaneyldrm/exercises-dataset/main/videos/1296-sVvXT5J.gif",
+        "attribution": "© Gym visual — https://gymvisual.com/"
+      },
+      "series": 2,
+      "reps": 12,
+      "repsLabel": "12",
+      "notes": "Pike push-ups (closest match)",
+      "workSeconds": 40,
+      "restSeconds": 20
+    }
+  ]
+}

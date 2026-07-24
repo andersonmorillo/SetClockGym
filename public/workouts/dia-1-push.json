@@ -1,0 +1,97 @@
+{
+  "name": "Día 1 — Push",
+  "savedAt": "2026-07-23T23:58:20.579Z",
+  "settings": {
+    "workSeconds": 40,
+    "restSeconds": 20,
+    "rounds": 1,
+    "includeUpperWarmUp": true,
+    "includeLegWarmUp": false,
+    "includeUpperCoolDown": true,
+    "includeLegCoolDown": false
+  },
+  "exercises": [
+    {
+      "instanceId": "push-dips",
+      "exercise": {
+        "id": "0251",
+        "name": "chest dip",
+        "equipment": "body weight",
+        "primaryMuscles": [
+          "pectorals"
+        ],
+        "category": "chest",
+        "image": "https://raw.githubusercontent.com/hasaneyldrm/exercises-dataset/main/images/0251-9WTm7dq.jpg",
+        "gifUrl": "https://raw.githubusercontent.com/hasaneyldrm/exercises-dataset/main/videos/0251-9WTm7dq.gif",
+        "attribution": "© Gym visual — https://gymvisual.com/"
+      },
+      "series": 4,
+      "reps": 12,
+      "repsLabel": "5-12",
+      "notes": "Última serie → al fallo",
+      "workSeconds": 40,
+      "restSeconds": 20
+    },
+    {
+      "instanceId": "push-deep",
+      "exercise": {
+        "id": "1274",
+        "name": "deep push up",
+        "equipment": "dumbbell",
+        "primaryMuscles": [
+          "pectorals"
+        ],
+        "category": "chest",
+        "image": "https://raw.githubusercontent.com/hasaneyldrm/exercises-dataset/main/images/1274-vptOQ4N.jpg",
+        "gifUrl": "https://raw.githubusercontent.com/hasaneyldrm/exercises-dataset/main/videos/1274-vptOQ4N.gif",
+        "attribution": "© Gym visual — https://gymvisual.com/"
+      },
+      "series": 3,
+      "reps": 20,
+      "repsLabel": "10-20",
+      "workSeconds": 40,
+      "restSeconds": 20
+    },
+    {
+      "instanceId": "push-pike",
+      "exercise": {
+        "id": "1296",
+        "name": "exercise ball pike push up",
+        "equipment": "stability ball",
+        "primaryMuscles": [
+          "pectorals"
+        ],
+        "category": "chest",
+        "image": "https://raw.githubusercontent.com/hasaneyldrm/exercises-dataset/main/images/1296-sVvXT5J.jpg",
+        "gifUrl": "https://raw.githubusercontent.com/hasaneyldrm/exercises-dataset/main/videos/1296-sVvXT5J.gif",
+        "attribution": "© Gym visual — https://gymvisual.com/"
+      },
+      "series": 3,
+      "reps": 12,
+      "repsLabel": "8-12",
+      "notes": "Pike push-ups (closest match in library)",
+      "workSeconds": 40,
+      "restSeconds": 20
+    },
+    {
+      "instanceId": "push-diamond",
+      "exercise": {
+        "id": "0283",
+        "name": "diamond push-up",
+        "equipment": "body weight",
+        "primaryMuscles": [
+          "triceps"
+        ],
+        "category": "upper arms",
+        "image": "https://raw.githubusercontent.com/hasaneyldrm/exercises-dataset/main/images/0283-soIB2rj.jpg",
+        "gifUrl": "https://raw.githubusercontent.com/hasaneyldrm/exercises-dataset/main/videos/0283-soIB2rj.gif",
+        "attribution": "© Gym visual — https://gymvisual.com/"
+      },
+      "series": 2,
+      "reps": 0,
+      "repsLabel": "AMRAP",
+      "workSeconds": 40,
+      "restSeconds": 20
+    }
+  ]
+}
