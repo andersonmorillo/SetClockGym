@@ -1,3 +1,4 @@
+import { useEffect, useRef } from 'react'
 import { getExerciseMediaUrl } from '../api/exercises'
 import { useWorkoutTimer } from '../hooks/useWorkoutTimer'
 import type { WorkoutExercise, WorkoutSettings } from '../types'
@@ -35,6 +36,35 @@ export function ActiveTimer({
     skipSeries,
     skipExercise,
   } = useWorkoutTimer({ exercises: workout, settings, onComplete })
+
+  const toggleRunningRef = useRef(toggleRunning)
+  toggleRunningRef.current = toggleRunning
+
+  useEffect(() => {
+    function onKeyDown(event: KeyboardEvent) {
+      if (event.code !== 'Space' && event.key !== ' ') return
+      if (event.repeat) return
+
+      const target = event.target
+      if (target instanceof HTMLElement) {
+        const tag = target.tagName
+        if (
+          tag === 'INPUT' ||
+          tag === 'TEXTAREA' ||
+          tag === 'SELECT' ||
+          target.isContentEditable
+        ) {
+          return
+        }
+      }
+
+      event.preventDefault()
+      toggleRunningRef.current()
+    }
+
+    window.addEventListener('keydown', onKeyDown)
+    return () => window.removeEventListener('keydown', onKeyDown)
+  }, [])
 
   if (!current) return null
 

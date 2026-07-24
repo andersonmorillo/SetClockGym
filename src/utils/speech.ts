@@ -29,13 +29,17 @@ export function stopSpeaking(): void {
   currentAudio = null
 }
 
-export function speakRoast(index: number): void {
+export function speakRoast(indexOrUrl: number | string): void {
   if (typeof window === 'undefined') return
   if (!isSpeakRoastsEnabled()) return
 
   stopSpeaking()
 
-  const audio = new Audio(getRoastAudioPath(index))
+  const src =
+    typeof indexOrUrl === 'string' ? indexOrUrl : getRoastAudioPath(indexOrUrl)
+  if (!src) return
+
+  const audio = new Audio(src)
   audio.preload = 'auto'
   currentAudio = audio
 

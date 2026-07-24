@@ -42,6 +42,7 @@ export type SavedWorkout = {
 export type AppScreen =
   | 'builder'
   | 'progress'
+  | 'sounds'
   | 'warmup'
   | 'timer'
   | 'cooldown'

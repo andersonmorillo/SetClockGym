@@ -4,6 +4,14 @@
   padding: 1.25rem 1rem 6.5rem;
 }
 
+.app:has(.timer-screen) {
+  padding: 0.75rem 1rem 1rem;
+  min-height: 100dvh;
+  box-sizing: border-box;
+  display: flex;
+  flex-direction: column;
+}
+
 .screen-enter {
   animation: screen-in 0.35s ease both;
 }
@@ -363,9 +371,14 @@ button.ghost {
 .timer-screen {
   position: relative;
   width: 100%;
+  flex: 1;
+  min-height: 0;
+  max-height: calc(100dvh - 1.75rem);
   border-radius: calc(var(--radius) + 4px);
   border: 1px solid var(--line);
-  padding: 1rem 1rem 1.4rem;
+  padding: 0.75rem 1rem 1rem;
+  gap: 0.4rem;
+  justify-content: space-between;
   overflow: hidden;
   background: var(--bg-elevated);
 }
@@ -438,8 +451,9 @@ button.ghost {
   justify-content: space-between;
   align-items: center;
   gap: 0.5rem;
-  margin-bottom: 0.35rem;
+  margin-bottom: 0;
   flex-wrap: wrap;
+  flex-shrink: 0;
 }
 
 .timer-meta {
@@ -462,22 +476,24 @@ button.ghost {
 }
 
 .phase-label {
-  margin: 0.2rem 0 0;
+  margin: 0;
   text-transform: uppercase;
   letter-spacing: 0.18em;
   font-weight: 800;
-  font-size: 1rem;
+  font-size: 0.9rem;
   color: var(--phase);
+  flex-shrink: 0;
 }
 
 .countdown {
   margin: 0;
-  font-size: clamp(5rem, 22vw, 7.5rem);
+  font-size: clamp(3.8rem, 14vw, 5.5rem);
   font-weight: 800;
   letter-spacing: -0.04em;
   line-height: 0.9;
   color: var(--phase);
   font-variant-numeric: tabular-nums;
+  flex-shrink: 0;
 }
 
 .countdown.is-urgent {
@@ -485,17 +501,32 @@ button.ghost {
 }
 
 .timer-image {
-  width: min(210px, 55vw);
-  height: min(210px, 55vw);
-  margin: 0.35rem 0;
+  width: min(140px, 32vw);
+  height: min(140px, 32vw);
+  margin: 0.15rem 0;
+  object-fit: cover;
   border: 2px solid color-mix(in srgb, var(--phase) 45%, transparent);
+  flex-shrink: 1;
 }
 
 .timer-screen h2 {
   margin: 0;
-  font-size: clamp(1.5rem, 4vw, 2rem);
+  font-size: clamp(1.2rem, 3.2vw, 1.65rem);
   font-weight: 800;
   text-transform: uppercase;
+  flex-shrink: 0;
+}
+
+.timer-screen .encouragement {
+  margin: 0;
+  font-size: 0.95rem;
+  flex-shrink: 0;
+}
+
+.timer-meta,
+.timer-screen .next,
+.timer-screen .notes {
+  flex-shrink: 0;
 }
 
 .next {
@@ -505,11 +536,12 @@ button.ghost {
 
 .progress-track {
   width: min(380px, 100%);
-  height: 10px;
+  height: 8px;
   border-radius: 999px;
   background: rgba(255, 255, 255, 0.08);
   overflow: hidden;
-  margin: 0.35rem 0 0.7rem;
+  margin: 0.15rem 0 0.35rem;
+  flex-shrink: 0;
 }
 
 .progress-fill {
@@ -521,8 +553,10 @@ button.ghost {
 .control-stack {
   width: min(360px, 100%);
   display: grid;
-  gap: 0.65rem;
+  gap: 0.45rem;
   justify-items: center;
+  flex-shrink: 0;
+  margin-top: auto;
 }
 
 .timer-screen .primary,
@@ -531,20 +565,21 @@ button.ghost {
 .warmup .primary,
 .warmup .ghost {
   width: min(320px, 100%);
-  min-height: 3rem;
+  min-height: 2.75rem;
 }
 
 .skip-actions {
-  display: flex;
-  flex-wrap: wrap;
-  gap: 0.5rem;
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 0.4rem;
   justify-content: center;
   width: 100%;
 }
 
 .skip-actions button {
-  min-height: 2.75rem;
-  padding-inline: 1rem;
+  min-height: 2.5rem;
+  padding-inline: 0.5rem;
+  font-size: 0.82rem;
   background: rgba(0, 0, 0, 0.2);
 }
 
@@ -563,6 +598,105 @@ button.ghost {
   align-items: center;
   gap: 0.75rem;
   margin-bottom: 0.55rem;
+}
+
+.header-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.45rem;
+  justify-content: flex-end;
+}
+
+.sounds-form {
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+}
+
+.sounds-form label {
+  display: flex;
+  flex-direction: column;
+  gap: 0.35rem;
+  font-size: 0.85rem;
+  color: var(--muted);
+}
+
+.record-controls {
+  display: flex;
+  flex-direction: column;
+  gap: 0.45rem;
+}
+
+.record-label {
+  font-size: 0.85rem;
+  color: var(--muted);
+}
+
+.record-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.45rem;
+}
+
+.record-stop {
+  background: color-mix(in srgb, var(--rest) 85%, #111);
+}
+
+.record-status {
+  margin: 0;
+  font-size: 0.9rem;
+  font-weight: 700;
+  color: var(--rest);
+}
+
+.sounds-list {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 0.65rem;
+}
+
+.sounds-list li {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 0.8rem;
+  padding: 0.75rem;
+  background: var(--surface-2);
+  border: 1px solid var(--line);
+  border-radius: 14px;
+}
+
+.sounds-list p {
+  margin: 0;
+  min-width: 0;
+}
+
+.sound-check {
+  display: flex;
+  align-items: flex-start;
+  gap: 0.65rem;
+  min-width: 0;
+  flex: 1;
+  cursor: pointer;
+  text-align: left;
+  color: var(--text);
+  font-size: 0.95rem;
+  line-height: 1.35;
+}
+
+.sound-check input {
+  margin-top: 0.2rem;
+  width: 1.1rem;
+  height: 1.1rem;
+  flex-shrink: 0;
+  accent-color: var(--accent);
+}
+
+.sound-check span {
+  min-width: 0;
 }
 
 .progress-page .header h1 {
@@ -703,6 +837,10 @@ button.ghost {
     overflow-x: hidden;
   }
 
+  .app:has(.timer-screen) {
+    padding: 0.5rem 0.6rem calc(0.6rem + env(safe-area-inset-bottom));
+  }
+
   .header h1,
   .complete h1,
   .warmup h1 {
@@ -814,36 +952,50 @@ button.ghost {
   }
 
   .timer-screen {
-    padding: 0.75rem 0.7rem 1rem;
+    padding: 0.55rem 0.6rem 0.7rem;
     border-radius: 14px;
+    gap: 0.3rem;
+    max-height: calc(100dvh - 1.1rem - env(safe-area-inset-bottom));
+    justify-content: space-between;
   }
 
   .timer-screen .encouragement {
-    font-size: 0.92rem;
-    margin-top: 0.25rem;
+    font-size: 0.82rem;
+    margin-top: 0;
+  }
+
+  .phase-label {
+    font-size: 0.8rem;
+    letter-spacing: 0.14em;
   }
 
   .countdown {
-    font-size: clamp(3.6rem, 20vw, 5.2rem);
+    font-size: clamp(3rem, 16vw, 4.2rem);
   }
 
   .timer-image {
-    width: min(140px, 42vw);
-    height: min(140px, 42vw);
+    width: min(96px, 28vw);
+    height: min(96px, 28vw);
+    margin: 0;
   }
 
   .timer-screen h2 {
-    font-size: clamp(1.2rem, 5.5vw, 1.55rem);
+    font-size: clamp(1.05rem, 4.5vw, 1.35rem);
     padding-inline: 0.25rem;
   }
 
   .timer-meta {
-    gap: 0.35rem;
+    gap: 0.3rem;
   }
 
   .timer-meta span {
-    font-size: 0.72rem;
-    padding: 0.28rem 0.5rem;
+    font-size: 0.68rem;
+    padding: 0.22rem 0.45rem;
+  }
+
+  .timer-screen .next,
+  .timer-screen .notes {
+    font-size: 0.82rem;
   }
 
   .control-stack,
@@ -857,18 +1009,20 @@ button.ghost {
   .warmup .primary,
   .warmup .ghost {
     width: 100%;
-    min-height: 3.1rem;
+    min-height: 2.7rem;
   }
 
   .skip-actions {
     display: grid;
-    grid-template-columns: 1fr;
-    gap: 0.45rem;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 0.35rem;
   }
 
   .skip-actions button {
     width: 100%;
-    min-height: 2.9rem;
+    min-height: 2.4rem;
+    font-size: 0.72rem;
+    padding-inline: 0.25rem;
   }
 
   .video-wrap {

@@ -39,6 +39,7 @@ type Props = {
   }) => void
   onStart: () => void
   onOpenProgress: () => void
+  onOpenSounds: () => void
 }
 
 export function WorkoutBuilder({
@@ -51,6 +52,7 @@ export function WorkoutBuilder({
   onLoadWorkout,
   onStart,
   onOpenProgress,
+  onOpenSounds,
 }: Props) {
   const [exercises, setExercises] = useState<Exercise[]>([])
   const [query, setQuery] = useState('')
@@ -255,9 +257,14 @@ export function WorkoutBuilder({
       <header className="header">
         <div className="progress-top">
           <span className="brand-mark">Gym Timer</span>
-          <button type="button" className="ghost" onClick={onOpenProgress}>
-            Progress KPIs
-          </button>
+          <div className="header-actions">
+            <button type="button" className="ghost" onClick={onOpenSounds}>
+              Sounds
+            </button>
+            <button type="button" className="ghost" onClick={onOpenProgress}>
+              Progress KPIs
+            </button>
+          </div>
         </div>
         <h1>Build your session</h1>
         <p>Set timings, load a preset, then hit start.</p>

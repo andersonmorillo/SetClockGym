@@ -1,5 +1,16 @@
 import type { WorkoutExercise, WorkoutSettings } from '../types'
 
+const VIDEO_SECONDS = 5 * 60
+
+function countVideoSteps(settings: WorkoutSettings): number {
+  return (
+    (settings.includeUpperWarmUp ? 1 : 0) +
+    (settings.includeLegWarmUp ? 1 : 0) +
+    (settings.includeUpperCoolDown ? 1 : 0) +
+    (settings.includeLegCoolDown ? 1 : 0)
+  )
+}
+
 export function estimateWorkoutSeconds(
   workout: WorkoutExercise[],
   settings: WorkoutSettings,
@@ -21,5 +32,5 @@ export function estimateWorkoutSeconds(
     })
   }
 
-  return total
+  return total + countVideoSteps(settings) * VIDEO_SECONDS
 }

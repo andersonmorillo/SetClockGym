@@ -1,17 +1,22 @@
 from __future__ import annotations
 
 import json
+import re
 import sqlite3
+import uuid
 from datetime import datetime, timedelta, timezone
 from pathlib import Path
 from typing import Any
 
-from fastapi import FastAPI, HTTPException
+from fastapi import FastAPI, File, Form, HTTPException, UploadFile
 from fastapi.middleware.cors import CORSMiddleware
+from fastapi.responses import FileResponse
 from pydantic import BaseModel, Field
 
 DB_PATH = Path(__file__).resolve().parent / "gym_timer.db"
 WORKOUTS_DIR = Path(__file__).resolve().parents[1] / "public" / "workouts"
+PHRASES_DIR = Path(__file__).resolve().parent / "uploads" / "phrases"
+ALLOWED_AUDIO_EXT = {".mp3", ".wav", ".ogg", ".m4a", ".webm"}
 SEED_FILES = [
     "lunes-push.json",
     "martes-pull.json",
@@ -65,7 +70,18 @@ def init_db() -> None:
             )
             """
         )
+        conn.execute(
+            """
+            CREATE TABLE IF NOT EXISTS phrases (
+                id INTEGER PRIMARY KEY AUTOINCREMENT,
+                phrase TEXT NOT NULL,
+                filename TEXT NOT NULL,
+                created_at TEXT NOT NULL
+            )
+            """
+        )
         conn.commit()
+    PHRASES_DIR.mkdir(parents=True, exist_ok=True)
     seed_default_workouts()
 
 
@@ -245,6 +261,108 @@ def on_startup() -> None:
 @app.get("/api/health")
 def health() -> dict[str, str]:
     return {"status": "ok"}
+
+
+class PhraseOut(BaseModel):
+    id: int
+    phrase: str
+    audio_url: str
+    created_at: str
+
+
+def row_to_phrase(row: sqlite3.Row) -> PhraseOut:
+    return PhraseOut(
+        id=row["id"],
+        phrase=row["phrase"],
+        audio_url=f"/api/phrases/audio/{row['filename']}",
+        created_at=row["created_at"],
+    )
+
+
+def safe_audio_filename(original_name: str | None) -> str:
+    suffix = Path(original_name or "").suffix.lower()
+    if suffix not in ALLOWED_AUDIO_EXT:
+        raise HTTPException(
+            status_code=400,
+            detail="Audio must be mp3, wav, ogg, m4a, or webm",
+        )
+    return f"{uuid.uuid4().hex}{suffix}"
+
+
+@app.get("/api/phrases", response_model=list[PhraseOut])
+def list_phrases() -> list[PhraseOut]:
+    with connect() as conn:
+        rows = conn.execute(
+            """
+            SELECT * FROM phrases
+            ORDER BY datetime(created_at) DESC, id DESC
+            """
+        ).fetchall()
+    return [row_to_phrase(row) for row in rows]
+
+
+@app.post("/api/phrases", response_model=PhraseOut)
+async def create_phrase(
+    phrase: str = Form(...),
+    audio: UploadFile = File(...),
+) -> PhraseOut:
+    text = phrase.strip()
+    if not text:
+        raise HTTPException(status_code=400, detail="Phrase is required")
+
+    filename = safe_audio_filename(audio.filename)
+    PHRASES_DIR.mkdir(parents=True, exist_ok=True)
+    destination = PHRASES_DIR / filename
+    content = await audio.read()
+    if not content:
+        raise HTTPException(status_code=400, detail="Audio file is empty")
+    destination.write_bytes(content)
+
+    created_at = datetime.now(timezone.utc).isoformat()
+    with connect() as conn:
+        cursor = conn.execute(
+            """
+            INSERT INTO phrases (phrase, filename, created_at)
+            VALUES (?, ?, ?)
+            """,
+            (text, filename, created_at),
+        )
+        phrase_id = cursor.lastrowid
+        conn.commit()
+        row = conn.execute(
+            "SELECT * FROM phrases WHERE id = ?",
+            (phrase_id,),
+        ).fetchone()
+    if row is None:
+        raise HTTPException(status_code=500, detail="Failed to save phrase")
+    return row_to_phrase(row)
+
+
+@app.get("/api/phrases/audio/{filename}")
+def get_phrase_audio(filename: str) -> FileResponse:
+    if not re.fullmatch(r"[a-f0-9]{32}\.[a-z0-9]+", filename):
+        raise HTTPException(status_code=400, detail="Invalid filename")
+    path = PHRASES_DIR / filename
+    if not path.is_file():
+        raise HTTPException(status_code=404, detail="Audio not found")
+    return FileResponse(path)
+
+
+@app.delete("/api/phrases/{phrase_id}")
+def delete_phrase(phrase_id: int) -> dict[str, bool]:
+    with connect() as conn:
+        row = conn.execute(
+            "SELECT filename FROM phrases WHERE id = ?",
+            (phrase_id,),
+        ).fetchone()
+        if row is None:
+            raise HTTPException(status_code=404, detail="Phrase not found")
+        conn.execute("DELETE FROM phrases WHERE id = ?", (phrase_id,))
+        conn.commit()
+    audio_path = PHRASES_DIR / str(row["filename"])
+    if audio_path.is_file():
+        audio_path.unlink()
+    return {"ok": True}
 
 
 @app.get("/api/workouts", response_model=list[SavedWorkoutOut])

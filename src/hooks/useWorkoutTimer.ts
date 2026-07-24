@@ -204,16 +204,62 @@ export function useWorkoutTimer({
   const [running, setRunning] = useState(true)
   const onCompleteRef = useRef(onComplete)
   onCompleteRef.current = onComplete
-  const prevPhaseRef = useRef(state.phase)
   const lastTickBeepRef = useRef<number | null>(null)
+  const prevSeriesCueRef = useRef<{
+    primed: boolean
+    phase: TimerPhase
+    series: number
+    exerciseIndex: number
+    round: number
+  }>({
+    primed: false,
+    phase: state.phase,
+    series: state.series,
+    exerciseIndex: state.exerciseIndex,
+    round: state.round,
+  })
 
   useEffect(() => {
-    if (prevPhaseRef.current !== state.phase) {
-      playBeep('phase')
-      prevPhaseRef.current = state.phase
+    const prev = prevSeriesCueRef.current
+    const { phase, series, exerciseIndex, round } = state
+
+    if (!prev.primed) {
+      playBeep('seriesStart')
+      prevSeriesCueRef.current = {
+        primed: true,
+        phase,
+        series,
+        exerciseIndex,
+        round,
+      }
+      return
+    }
+
+    const seriesIdentityChanged =
+      series !== prev.series ||
+      exerciseIndex !== prev.exerciseIndex ||
+      round !== prev.round
+
+    const leftWork =
+      prev.phase === 'work' && (phase !== 'work' || seriesIdentityChanged)
+    const enteredWork =
+      phase === 'work' && (prev.phase !== 'work' || seriesIdentityChanged)
+
+    if (leftWork) playBeep('seriesEnd')
+    if (enteredWork) playBeep('seriesStart')
+
+    if (leftWork || enteredWork || phase !== prev.phase) {
       lastTickBeepRef.current = null
     }
-  }, [state.phase])
+
+    prevSeriesCueRef.current = {
+      primed: true,
+      phase,
+      series,
+      exerciseIndex,
+      round,
+    }
+  }, [state.phase, state.series, state.exerciseIndex, state.round])
 
   useEffect(() => {
     if (!running) return
@@ -237,7 +283,7 @@ export function useWorkoutTimer({
         const next = advance(prev, exercises, settings)
         if (next === 'done') {
           setRunning(false)
-          playBeep('phase')
+          playBeep('seriesEnd')
           onCompleteRef.current()
           return { ...prev, secondsLeft: 0 }
         }
@@ -281,11 +327,10 @@ export function useWorkoutTimer({
         const next = advanceAfterRest(prev, exercises, settings)
         if (next === 'done') {
           setRunning(false)
-          playBeep('phase')
+          playBeep('seriesEnd')
           onCompleteRef.current()
           return { ...prev, secondsLeft: 0 }
         }
-        playBeep('phase')
         return next
       })
     },
@@ -294,11 +339,10 @@ export function useWorkoutTimer({
         const next = skipToNextSeries(prev, exercises, settings)
         if (next === 'done') {
           setRunning(false)
-          playBeep('phase')
+          playBeep('seriesEnd')
           onCompleteRef.current()
           return { ...prev, secondsLeft: 0 }
         }
-        playBeep('phase')
         return next
       })
     },
@@ -307,11 +351,10 @@ export function useWorkoutTimer({
         const next = skipToNextExercise(prev, exercises, settings)
         if (next === 'done') {
           setRunning(false)
-          playBeep('phase')
+          playBeep('seriesEnd')
           onCompleteRef.current()
           return { ...prev, secondsLeft: 0 }
         }
-        playBeep('phase')
         return next
       })
     },

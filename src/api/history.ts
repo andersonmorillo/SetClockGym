@@ -1,6 +1,5 @@
 import type { WorkoutExercise } from '../types'
-
-const API_URL = import.meta.env.VITE_API_URL ?? 'http://localhost:8000'
+import { apiFetch } from './config'
 
 export type HistorySession = {
   id: number
@@ -73,7 +72,7 @@ function mapExercises(exercises: WorkoutExercise[]) {
 export async function saveWorkoutSession(
   payload: SaveSessionPayload,
 ): Promise<HistorySession> {
-  const response = await fetch(`${API_URL}/api/history`, {
+  const response = await apiFetch('/api/history', {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
     body: JSON.stringify({
@@ -92,7 +91,7 @@ export async function saveWorkoutSession(
 }
 
 export async function fetchWeeklyKpis(): Promise<WeeklyKpis> {
-  const response = await fetch(`${API_URL}/api/kpis/weekly`)
+  const response = await apiFetch('/api/kpis/weekly')
   if (!response.ok) {
     throw new Error('Could not load weekly KPIs')
   }

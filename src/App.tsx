@@ -2,6 +2,7 @@ import { useMemo, useRef, useState } from 'react'
 import { saveWorkoutSession } from './api/history'
 import { ActiveTimer } from './components/ActiveTimer'
 import { ProgressPage } from './components/ProgressPage'
+import { SoundsPage } from './components/SoundsPage'
 import { VideoStep } from './components/VideoStep'
 import { WorkoutBuilder } from './components/WorkoutBuilder'
 import { WorkoutComplete } from './components/WorkoutComplete'
@@ -116,6 +117,7 @@ function App() {
           }}
           onStart={beginSession}
           onOpenProgress={() => setScreen('progress')}
+          onOpenSounds={() => setScreen('sounds')}
         />
       </main>
     )
@@ -125,6 +127,14 @@ function App() {
     return (
       <main className="app">
         <ProgressPage onBack={() => setScreen('builder')} />
+      </main>
+    )
+  }
+
+  if (screen === 'sounds') {
+    return (
+      <main className="app">
+        <SoundsPage onBack={() => setScreen('builder')} />
       </main>
     )
   }
@@ -153,7 +163,7 @@ function App() {
 }
 
 type WorkoutSessionProps = {
-  screen: Exclude<AppScreen, 'builder' | 'progress'>
+  screen: Exclude<AppScreen, 'builder' | 'progress' | 'sounds'>
   workout: WorkoutExercise[]
   settings: WorkoutSettings
   timerKey: number

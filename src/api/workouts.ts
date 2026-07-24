@@ -3,8 +3,7 @@ import {
   normalizeWorkout,
 } from '../data/savedWorkouts'
 import type { SavedWorkout, WorkoutExercise, WorkoutSettings } from '../types'
-
-const API_URL = import.meta.env.VITE_API_URL ?? 'http://localhost:8000'
+import { apiFetch } from './config'
 
 export type DbSavedWorkout = {
   id: number
@@ -28,7 +27,7 @@ function toSavedWorkout(row: DbSavedWorkout): SavedWorkout {
 }
 
 export async function fetchSavedWorkouts(): Promise<DbSavedWorkout[]> {
-  const response = await fetch(`${API_URL}/api/workouts`)
+  const response = await apiFetch('/api/workouts')
   if (!response.ok) {
     throw new Error('Could not load saved workouts from the API.')
   }
@@ -36,7 +35,7 @@ export async function fetchSavedWorkouts(): Promise<DbSavedWorkout[]> {
 }
 
 export async function fetchSavedWorkout(id: number): Promise<SavedWorkout> {
-  const response = await fetch(`${API_URL}/api/workouts/${id}`)
+  const response = await apiFetch(`/api/workouts/${id}`)
   if (!response.ok) {
     throw new Error('Could not load that workout.')
   }
@@ -47,7 +46,7 @@ export async function fetchSavedWorkout(id: number): Promise<SavedWorkout> {
 export async function saveWorkoutToDb(
   workout: SavedWorkout,
 ): Promise<DbSavedWorkout> {
-  const response = await fetch(`${API_URL}/api/workouts`, {
+  const response = await apiFetch('/api/workouts', {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
     body: JSON.stringify({
