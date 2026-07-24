@@ -8,40 +8,60 @@ Workout history and weekly KPIs are stored with **FastAPI + SQLite** (`backend/g
 
 ## Run
 
-### Double-click (Windows)
+No Docker required — just Node.js (LTS) and Python 3.10+.
 
-Double-click `start-gym-timer.bat`  
-It starts the API + app and opens `http://localhost:5173`.
+### Configure (once per machine)
 
-### Frontend
+```bash
+cp .env.example .env   # macOS/Linux
+# copy .env.example .env   # Windows
+```
+
+Edit `.env` before the first run. Important keys:
+
+| Variable | Purpose | Default |
+|---|---|---|
+| `API_HOST` / `API_PORT` | FastAPI bind address | `0.0.0.0` / `8000` |
+| `VITE_PORT` | Frontend port | `5173` |
+| `VITE_API_URL` | Direct API origin (leave empty to use `/api` proxy) | empty |
+| `VITE_API_PROXY_TARGET` | Vite `/api` proxy target | `http://127.0.0.1:8000` |
+| `NGROK_DOMAIN` | Optional public tunnel hostname (no `https://`) | empty |
+
+### Any OS (Windows, macOS, Linux)
+
+```bash
+npm run setup    # creates backend/.venv, installs backend + frontend deps
+npm run dev:all  # starts the API and the app together (ports from .env)
+```
+
+Open `http://localhost:5173` (or your `VITE_PORT`). Press `Ctrl+C` to stop both.
+
+### Double-click (Windows, alternative)
+
+Double-click `start-gym-timer.bat`.  
+It reads `.env`, starts the API + app, and opens the local URL. A public HTTPS tunnel via [ngrok](https://ngrok.com) starts only if `ngrok` is on `PATH` **and** `NGROK_DOMAIN` is set in `.env`.
+
+### Frontend only
 
 ```bash
 npm install
 npm run dev
 ```
 
-### Backend (history + KPIs)
+### Backend only (history + KPIs)
 
 ```bash
 cd backend
 python -m venv .venv
 # Windows:
 .venv\Scripts\activate
+# macOS/Linux:
+source .venv/bin/activate
 pip install -r requirements.txt
 uvicorn main:app --reload --port 8000
 ```
 
-Optional frontend env (`VITE_API_URL`, default `http://localhost:8000`).
-
-### Regenerate roast MP3 voices
-
-```bash
-pip install -r scripts/requirements-audio.txt
-python scripts/generate_roast_audio.py
-```
-
-Or double-click `scripts/generate-roast-audio.bat`.  
-Files are saved to `public/audio/roasts/01.mp3` … `12.mp3`.
+The frontend talks to the API through the Vite dev proxy (`/api` → `VITE_API_PROXY_TARGET`), so leave `VITE_API_URL` empty unless you want the frontend to call another API origin directly.
 
 ## How it works
 
