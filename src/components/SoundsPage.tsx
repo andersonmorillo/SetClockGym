@@ -13,6 +13,7 @@ import {
   isSoundEnabled,
   loadSoundPrefs,
   savedKey,
+  saveSoundPrefs,
   setSoundEnabled,
   type SoundPrefs,
 } from '../data/soundPrefs'
@@ -126,8 +127,12 @@ export function SoundsPage({ onBack }: Props) {
       if (fileInputRef.current) fileInputRef.current.value = ''
       clearRecordingPreview()
       setMessage('Phrase saved and enabled for encouragements.')
-    } catch {
-      setError('Could not save phrase. Check the API and file type.')
+    } catch (err) {
+      setError(
+        err instanceof Error
+          ? err.message
+          : 'Could not save phrase. Check the API and file type.',
+      )
     } finally {
       setSaving(false)
     }
@@ -201,7 +206,8 @@ export function SoundsPage({ onBack }: Props) {
         setMessage('Recording ready. Save the phrase to keep it.')
       }
 
-      recorder.start()
+      // Timeslice helps some browsers flush chunks before stop.
+      recorder.start(250)
       setRecording(true)
       setMessage('Recording…')
     } catch {
@@ -214,6 +220,11 @@ export function SoundsPage({ onBack }: Props) {
   function stopRecording() {
     const recorder = mediaRecorderRef.current
     if (!recorder || recorder.state !== 'recording') return
+    try {
+      if (recorder.state === 'recording') recorder.requestData()
+    } catch {
+      // Older browsers may not support requestData.
+    }
     recorder.stop()
   }
 
@@ -286,9 +297,17 @@ export function SoundsPage({ onBack }: Props) {
     try {
       await deletePhrase(id)
       setPhrases((current) => current.filter((item) => item.id !== id))
+      const cleaned = {
+        ...prefs,
+        disabledKeys: prefs.disabledKeys.filter((item) => item !== key),
+      }
+      saveSoundPrefs(cleaned)
+      setPrefs(cleaned)
       setMessage('Phrase deleted.')
-    } catch {
-      setError('Could not delete phrase.')
+    } catch (err) {
+      setError(
+        err instanceof Error ? err.message : 'Could not delete phrase.',
+      )
     }
   }
 

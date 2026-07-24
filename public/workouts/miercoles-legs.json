@@ -1,9 +1,9 @@
 {
   "name": "Miércoles — Legs",
-  "savedAt": "2026-07-23T23:58:20.591Z",
+  "savedAt": "2026-07-24T20:35:47.882253+00:00",
   "settings": {
-    "workSeconds": 40,
-    "restSeconds": 20,
+    "workSeconds": 45,
+    "restSeconds": 67,
     "rounds": 1,
     "includeUpperWarmUp": false,
     "includeLegWarmUp": true,
@@ -28,8 +28,8 @@
       "series": 4,
       "reps": 8,
       "repsLabel": "6-8",
-      "workSeconds": 40,
-      "restSeconds": 20
+      "workSeconds": 35,
+      "restSeconds": 41
     },
     {
       "instanceId": "legs-rdl",
@@ -49,7 +49,7 @@
       "reps": 10,
       "repsLabel": "8-10",
       "workSeconds": 40,
-      "restSeconds": 20
+      "restSeconds": 51
     },
     {
       "instanceId": "legs-bulgarian",
@@ -69,8 +69,8 @@
       "reps": 10,
       "repsLabel": "10",
       "notes": "Bulgarian split squat (closest match)",
-      "workSeconds": 40,
-      "restSeconds": 20
+      "workSeconds": 43,
+      "restSeconds": 61
     },
     {
       "instanceId": "legs-calf",
@@ -89,8 +89,8 @@
       "series": 4,
       "reps": 15,
       "repsLabel": "15",
-      "workSeconds": 40,
-      "restSeconds": 20
+      "workSeconds": 52,
+      "restSeconds": 89
     },
     {
       "instanceId": "legs-knee",
@@ -110,8 +110,8 @@
       "reps": 15,
       "repsLabel": "15",
       "notes": "Hanging knee raises",
-      "workSeconds": 40,
-      "restSeconds": 20
+      "workSeconds": 55,
+      "restSeconds": 93
     }
   ]
 }

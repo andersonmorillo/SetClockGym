@@ -1,9 +1,9 @@
 {
   "name": "Lunes — Push",
-  "savedAt": "2026-07-24T00:39:49.596Z",
+  "savedAt": "2026-07-24T20:51:35.401592+00:00",
   "settings": {
-    "workSeconds": 40,
-    "restSeconds": 20,
+    "workSeconds": 51,
+    "restSeconds": 114,
     "rounds": 1,
     "includeUpperWarmUp": true,
     "includeLegWarmUp": false,
@@ -23,14 +23,14 @@
         "category": "chest",
         "image": "https://raw.githubusercontent.com/hasaneyldrm/exercises-dataset/main/images/0251-9WTm7dq.jpg",
         "gifUrl": "https://raw.githubusercontent.com/hasaneyldrm/exercises-dataset/main/videos/0251-9WTm7dq.gif",
-        "attribution": "© Gym visual — https://gymvisual.com/"
+        "attribution": "ÃÂ© Gym visual Ã¢ÂÂ https://gymvisual.com/"
       },
       "series": 4,
       "reps": 12,
       "repsLabel": "5-12",
-      "notes": "Última serie → al fallo",
+      "notes": "ÃÂltima serie Ã¢ÂÂ al fallo",
       "workSeconds": 40,
-      "restSeconds": 20
+      "restSeconds": 92
     },
     {
       "instanceId": "push-deep",
@@ -44,13 +44,13 @@
         "category": "chest",
         "image": "https://raw.githubusercontent.com/hasaneyldrm/exercises-dataset/main/images/1274-vptOQ4N.jpg",
         "gifUrl": "https://raw.githubusercontent.com/hasaneyldrm/exercises-dataset/main/videos/1274-vptOQ4N.gif",
-        "attribution": "© Gym visual — https://gymvisual.com/"
+        "attribution": "ÃÂ© Gym visual Ã¢ÂÂ https://gymvisual.com/"
       },
       "series": 3,
       "reps": 20,
       "repsLabel": "10-20",
-      "workSeconds": 40,
-      "restSeconds": 20
+      "workSeconds": 55,
+      "restSeconds": 120
     },
     {
       "instanceId": "push-pike",
@@ -64,14 +64,14 @@
         "category": "chest",
         "image": "https://raw.githubusercontent.com/hasaneyldrm/exercises-dataset/main/images/1296-sVvXT5J.jpg",
         "gifUrl": "https://raw.githubusercontent.com/hasaneyldrm/exercises-dataset/main/videos/1296-sVvXT5J.gif",
-        "attribution": "© Gym visual — https://gymvisual.com/"
+        "attribution": "ÃÂ© Gym visual Ã¢ÂÂ https://gymvisual.com/"
       },
       "series": 3,
       "reps": 12,
       "repsLabel": "8-12",
       "notes": "Pike push-ups (closest match in library)",
-      "workSeconds": 40,
-      "restSeconds": 20
+      "workSeconds": 47,
+      "restSeconds": 114
     },
     {
       "instanceId": "push-diamond",
@@ -85,13 +85,13 @@
         "category": "upper arms",
         "image": "https://raw.githubusercontent.com/hasaneyldrm/exercises-dataset/main/images/0283-soIB2rj.jpg",
         "gifUrl": "https://raw.githubusercontent.com/hasaneyldrm/exercises-dataset/main/videos/0283-soIB2rj.gif",
-        "attribution": "© Gym visual — https://gymvisual.com/"
+        "attribution": "ÃÂ© Gym visual Ã¢ÂÂ https://gymvisual.com/"
       },
       "series": 2,
       "reps": 0,
       "repsLabel": "AMRAP",
-      "workSeconds": 40,
-      "restSeconds": 20
+      "workSeconds": 60,
+      "restSeconds": 130
     }
   ]
 }

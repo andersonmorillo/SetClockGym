@@ -3,6 +3,7 @@ from __future__ import annotations
 import json
 import re
 import sqlite3
+import unicodedata
 import uuid
 from datetime import datetime, timedelta, timezone
 from pathlib import Path
@@ -45,8 +46,7 @@ def connect() -> sqlite3.Connection:
 
 def ensure_column(conn: sqlite3.Connection, table: str, column: str, ddl: str) -> None:
     cols = {
-        row["name"]
-        for row in conn.execute(f"PRAGMA table_info({table})").fetchall()
+        row["name"] for row in conn.execute(f"PRAGMA table_info({table})").fetchall()
     }
     if column not in cols:
         conn.execute(f"ALTER TABLE {table} ADD COLUMN {ddl}")
@@ -69,20 +69,20 @@ def init_db() -> None:
             )
             """
         )
-        ensure_column(
-            conn, "workout_sessions", "feedback_json", "feedback_json TEXT"
-        )
+        ensure_column(conn, "workout_sessions", "feedback_json", "feedback_json TEXT")
         conn.execute(
             """
             CREATE TABLE IF NOT EXISTS saved_workouts (
                 id INTEGER PRIMARY KEY AUTOINCREMENT,
                 name TEXT NOT NULL UNIQUE,
+                slug TEXT,
                 settings_json TEXT NOT NULL,
                 exercises_json TEXT NOT NULL,
                 updated_at TEXT NOT NULL
             )
             """
         )
+        ensure_column(conn, "saved_workouts", "slug", "slug TEXT")
         conn.execute(
             """
             CREATE TABLE IF NOT EXISTS phrases (
@@ -95,7 +95,75 @@ def init_db() -> None:
         )
         conn.commit()
     PHRASES_DIR.mkdir(parents=True, exist_ok=True)
+    WORKOUTS_DIR.mkdir(parents=True, exist_ok=True)
     seed_default_workouts()
+    backfill_workout_slugs()
+    recover_orphan_phrase_files()
+
+
+def slugify_workout_name(name: str) -> str:
+    normalized = unicodedata.normalize("NFKD", name)
+    ascii_text = normalized.encode("ascii", "ignore").decode("ascii")
+    slug = re.sub(r"[^a-z0-9]+", "-", ascii_text.lower()).strip("-")
+    return slug or "workout"
+
+
+def allocate_slug(
+    conn: sqlite3.Connection, name: str, exclude_id: int | None = None
+) -> str:
+    base = slugify_workout_name(name)
+    candidate = base
+    suffix = 2
+    while True:
+        if exclude_id is None:
+            row = conn.execute(
+                "SELECT id FROM saved_workouts WHERE slug = ?",
+                (candidate,),
+            ).fetchone()
+        else:
+            row = conn.execute(
+                """
+                SELECT id FROM saved_workouts
+                WHERE slug = ? AND id != ?
+                """,
+                (candidate, exclude_id),
+            ).fetchone()
+        if row is None:
+            return candidate
+        candidate = f"{base}-{suffix}"
+        suffix += 1
+
+
+def workout_json_path(slug: str) -> Path:
+    return WORKOUTS_DIR / f"{slug}.json"
+
+
+def write_workout_json(
+    slug: str,
+    name: str,
+    settings: dict[str, Any],
+    exercises: list[dict[str, Any]],
+    updated_at: str,
+) -> None:
+    WORKOUTS_DIR.mkdir(parents=True, exist_ok=True)
+    payload = {
+        "name": name,
+        "savedAt": updated_at,
+        "settings": settings,
+        "exercises": exercises,
+    }
+    workout_json_path(slug).write_text(
+        json.dumps(payload, indent=2, ensure_ascii=False) + "\n",
+        encoding="utf-8",
+    )
+
+
+def delete_workout_json(slug: str | None) -> None:
+    if not slug:
+        return
+    path = workout_json_path(slug)
+    if path.is_file():
+        path.unlink()
 
 
 def seed_default_workouts() -> None:
@@ -114,19 +182,70 @@ def seed_default_workouts() -> None:
             name = str(data.get("name") or path.stem)
             settings = data.get("settings") or {}
             exercises = data.get("exercises") or []
+            slug = path.stem
             conn.execute(
                 """
                 INSERT OR IGNORE INTO saved_workouts (
-                    name, settings_json, exercises_json, updated_at
-                ) VALUES (?, ?, ?, ?)
+                    name, slug, settings_json, exercises_json, updated_at
+                ) VALUES (?, ?, ?, ?, ?)
                 """,
                 (
                     name,
+                    slug,
                     json.dumps(settings),
                     json.dumps(exercises),
                     datetime.now(timezone.utc).isoformat(),
                 ),
             )
+        conn.commit()
+
+
+def backfill_workout_slugs() -> None:
+    with connect() as conn:
+        rows = conn.execute(
+            """
+            SELECT id, name, slug FROM saved_workouts
+            WHERE slug IS NULL OR TRIM(slug) = ''
+            """
+        ).fetchall()
+        for row in rows:
+            slug = allocate_slug(conn, row["name"], exclude_id=row["id"])
+            conn.execute(
+                "UPDATE saved_workouts SET slug = ? WHERE id = ?",
+                (slug, row["id"]),
+            )
+        conn.commit()
+
+
+def recover_orphan_phrase_files() -> None:
+    """Re-link audio files on disk that have no phrases row."""
+    PHRASES_DIR.mkdir(parents=True, exist_ok=True)
+    with connect() as conn:
+        known = {
+            str(row["filename"])
+            for row in conn.execute("SELECT filename FROM phrases").fetchall()
+        }
+        for path in sorted(PHRASES_DIR.iterdir()):
+            if not path.is_file():
+                continue
+            if path.suffix.lower() not in ALLOWED_AUDIO_EXT:
+                continue
+            if not re.fullmatch(r"[a-f0-9]{32}\.[a-z0-9]+", path.name):
+                continue
+            if path.name in known:
+                continue
+            if path.stat().st_size <= 0:
+                path.unlink(missing_ok=True)
+                continue
+            created_at = datetime.now(timezone.utc).isoformat()
+            conn.execute(
+                """
+                INSERT INTO phrases (phrase, filename, created_at)
+                VALUES (?, ?, ?)
+                """,
+                ("Recovered recording", path.name, created_at),
+            )
+            known.add(path.name)
         conn.commit()
 
 
@@ -139,6 +258,7 @@ class WorkoutSaveIn(BaseModel):
 class SavedWorkoutOut(BaseModel):
     id: int
     name: str
+    slug: str
     settings: dict[str, Any]
     exercises: list[dict[str, Any]]
     updated_at: str
@@ -148,6 +268,7 @@ def row_to_saved_workout(row: sqlite3.Row) -> SavedWorkoutOut:
     return SavedWorkoutOut(
         id=row["id"],
         name=row["name"],
+        slug=str(row["slug"] or slugify_workout_name(row["name"])),
         settings=json.loads(row["settings_json"] or "{}"),
         exercises=json.loads(row["exercises_json"] or "[]"),
         updated_at=row["updated_at"],
@@ -261,9 +382,7 @@ def pct_change(current: float, previous: float) -> float | None:
     return round(((current - previous) / previous) * 100, 1)
 
 
-def aggregate_verdicts(
-    sessions: list[SessionOut], key: str
-) -> list[dict[str, Any]]:
+def aggregate_verdicts(sessions: list[SessionOut], key: str) -> list[dict[str, Any]]:
     counts: dict[str, int] = {}
     for session in sessions:
         feedback = session.feedback or {}
@@ -272,9 +391,9 @@ def aggregate_verdicts(
             counts[name] = counts.get(name, 0) + 1
     return [
         {"name": name, "count": count}
-        for name, count in sorted(
-            counts.items(), key=lambda pair: (-pair[1], pair[0])
-        )[:8]
+        for name, count in sorted(counts.items(), key=lambda pair: (-pair[1], pair[0]))[
+            :8
+        ]
     ]
 
 
@@ -444,24 +563,32 @@ async def create_phrase(
     content = await audio.read()
     if not content:
         raise HTTPException(status_code=400, detail="Audio file is empty")
-    destination.write_bytes(content)
 
     created_at = datetime.now(timezone.utc).isoformat()
-    with connect() as conn:
-        cursor = conn.execute(
-            """
-            INSERT INTO phrases (phrase, filename, created_at)
-            VALUES (?, ?, ?)
-            """,
-            (text, filename, created_at),
-        )
-        phrase_id = cursor.lastrowid
-        conn.commit()
-        row = conn.execute(
-            "SELECT * FROM phrases WHERE id = ?",
-            (phrase_id,),
-        ).fetchone()
+    try:
+        destination.write_bytes(content)
+        with connect() as conn:
+            cursor = conn.execute(
+                """
+                INSERT INTO phrases (phrase, filename, created_at)
+                VALUES (?, ?, ?)
+                """,
+                (text, filename, created_at),
+            )
+            phrase_id = cursor.lastrowid
+            conn.commit()
+            row = conn.execute(
+                "SELECT * FROM phrases WHERE id = ?",
+                (phrase_id,),
+            ).fetchone()
+    except Exception:
+        if destination.is_file():
+            destination.unlink()
+        raise
+
     if row is None:
+        if destination.is_file():
+            destination.unlink()
         raise HTTPException(status_code=500, detail="Failed to save phrase")
     return row_to_phrase(row)
 
@@ -473,7 +600,17 @@ def get_phrase_audio(filename: str) -> FileResponse:
     path = PHRASES_DIR / filename
     if not path.is_file():
         raise HTTPException(status_code=404, detail="Audio not found")
-    return FileResponse(path)
+    media_types = {
+        ".mp3": "audio/mpeg",
+        ".wav": "audio/wav",
+        ".ogg": "audio/ogg",
+        ".m4a": "audio/mp4",
+        ".webm": "audio/webm",
+    }
+    return FileResponse(
+        path,
+        media_type=media_types.get(path.suffix.lower(), "application/octet-stream"),
+    )
 
 
 @app.delete("/api/phrases/{phrase_id}")
@@ -518,7 +655,7 @@ def get_workout(workout_id: int) -> SavedWorkoutOut:
 
 
 @app.post("/api/workouts", response_model=SavedWorkoutOut)
-def upsert_workout(payload: WorkoutSaveIn) -> SavedWorkoutOut:
+def create_workout(payload: WorkoutSaveIn) -> SavedWorkoutOut:
     name = payload.name.strip() or "My workout"
     updated_at = datetime.now(timezone.utc).isoformat()
     with connect() as conn:
@@ -526,36 +663,28 @@ def upsert_workout(payload: WorkoutSaveIn) -> SavedWorkoutOut:
             "SELECT id FROM saved_workouts WHERE name = ?",
             (name,),
         ).fetchone()
-        if existing:
-            conn.execute(
-                """
-                UPDATE saved_workouts
-                SET settings_json = ?, exercises_json = ?, updated_at = ?
-                WHERE id = ?
-                """,
-                (
-                    json.dumps(payload.settings),
-                    json.dumps(payload.exercises),
-                    updated_at,
-                    existing["id"],
-                ),
+        if existing is not None:
+            raise HTTPException(
+                status_code=409,
+                detail="A workout with that name already exists",
             )
-            workout_id = existing["id"]
-        else:
-            cursor = conn.execute(
-                """
-                INSERT INTO saved_workouts (
-                    name, settings_json, exercises_json, updated_at
-                ) VALUES (?, ?, ?, ?)
-                """,
-                (
-                    name,
-                    json.dumps(payload.settings),
-                    json.dumps(payload.exercises),
-                    updated_at,
-                ),
-            )
-            workout_id = cursor.lastrowid
+
+        slug = allocate_slug(conn, name)
+        cursor = conn.execute(
+            """
+            INSERT INTO saved_workouts (
+                name, slug, settings_json, exercises_json, updated_at
+            ) VALUES (?, ?, ?, ?, ?)
+            """,
+            (
+                name,
+                slug,
+                json.dumps(payload.settings),
+                json.dumps(payload.exercises),
+                updated_at,
+            ),
+        )
+        workout_id = cursor.lastrowid
         conn.commit()
         row = conn.execute(
             "SELECT * FROM saved_workouts WHERE id = ?",
@@ -563,19 +692,86 @@ def upsert_workout(payload: WorkoutSaveIn) -> SavedWorkoutOut:
         ).fetchone()
     if row is None:
         raise HTTPException(status_code=500, detail="Failed to save workout")
-    return row_to_saved_workout(row)
+    out = row_to_saved_workout(row)
+    write_workout_json(
+        out.slug, out.name, out.settings, out.exercises, out.updated_at
+    )
+    return out
+
+
+@app.put("/api/workouts/{workout_id}", response_model=SavedWorkoutOut)
+def update_workout(workout_id: int, payload: WorkoutSaveIn) -> SavedWorkoutOut:
+    name = payload.name.strip() or "My workout"
+    updated_at = datetime.now(timezone.utc).isoformat()
+    with connect() as conn:
+        existing = conn.execute(
+            "SELECT id, slug FROM saved_workouts WHERE id = ?",
+            (workout_id,),
+        ).fetchone()
+        if existing is None:
+            raise HTTPException(status_code=404, detail="Workout not found")
+
+        conflict = conn.execute(
+            """
+            SELECT id FROM saved_workouts
+            WHERE name = ? AND id != ?
+            """,
+            (name, workout_id),
+        ).fetchone()
+        if conflict is not None:
+            raise HTTPException(
+                status_code=409,
+                detail="Another workout already uses that name",
+            )
+
+        old_slug = existing["slug"]
+        slug = allocate_slug(conn, name, exclude_id=workout_id)
+        conn.execute(
+            """
+            UPDATE saved_workouts
+            SET name = ?, slug = ?, settings_json = ?, exercises_json = ?,
+                updated_at = ?
+            WHERE id = ?
+            """,
+            (
+                name,
+                slug,
+                json.dumps(payload.settings),
+                json.dumps(payload.exercises),
+                updated_at,
+                workout_id,
+            ),
+        )
+        conn.commit()
+        row = conn.execute(
+            "SELECT * FROM saved_workouts WHERE id = ?",
+            (workout_id,),
+        ).fetchone()
+
+    if row is None:
+        raise HTTPException(status_code=500, detail="Failed to update workout")
+    out = row_to_saved_workout(row)
+    if old_slug and old_slug != out.slug:
+        delete_workout_json(old_slug)
+    write_workout_json(
+        out.slug, out.name, out.settings, out.exercises, out.updated_at
+    )
+    return out
 
 
 @app.delete("/api/workouts/{workout_id}")
 def delete_workout(workout_id: int) -> dict[str, bool]:
     with connect() as conn:
-        cursor = conn.execute(
-            "DELETE FROM saved_workouts WHERE id = ?",
+        row = conn.execute(
+            "SELECT slug FROM saved_workouts WHERE id = ?",
             (workout_id,),
-        )
+        ).fetchone()
+        if row is None:
+            raise HTTPException(status_code=404, detail="Workout not found")
+        slug = row["slug"]
+        conn.execute("DELETE FROM saved_workouts WHERE id = ?", (workout_id,))
         conn.commit()
-    if cursor.rowcount == 0:
-        raise HTTPException(status_code=404, detail="Workout not found")
+    delete_workout_json(slug)
     return {"ok": True}
 
 
@@ -656,14 +852,10 @@ def weekly_kpis() -> dict[str, Any]:
     next_start = this_start + timedelta(days=7)
 
     this_week = [
-        s
-        for s in sessions
-        if this_start <= parse_dt(s.created_at) < next_start
+        s for s in sessions if this_start <= parse_dt(s.created_at) < next_start
     ]
     last_week = [
-        s
-        for s in sessions
-        if last_start <= parse_dt(s.created_at) < this_start
+        s for s in sessions if last_start <= parse_dt(s.created_at) < this_start
     ]
 
     this_stats = compute_week_stats(this_week)
@@ -676,11 +868,7 @@ def weekly_kpis() -> dict[str, Any]:
         cursor = last_start
     while True:
         week_end = cursor + timedelta(days=7)
-        count = sum(
-            1
-            for s in sessions
-            if cursor <= parse_dt(s.created_at) < week_end
-        )
+        count = sum(1 for s in sessions if cursor <= parse_dt(s.created_at) < week_end)
         if count >= PLANNED_SESSIONS_PER_WEEK:
             streak += 1
             cursor -= timedelta(days=7)
@@ -693,9 +881,7 @@ def weekly_kpis() -> dict[str, Any]:
         "this_week": this_stats,
         "last_week": last_stats,
         "deltas": {
-            "sessions_pct": pct_change(
-                this_stats["sessions"], last_stats["sessions"]
-            ),
+            "sessions_pct": pct_change(this_stats["sessions"], last_stats["sessions"]),
             "minutes_pct": pct_change(
                 this_stats["total_minutes"], last_stats["total_minutes"]
             ),
@@ -704,10 +890,11 @@ def weekly_kpis() -> dict[str, Any]:
             ),
         },
         "streak_weeks": streak,
-        "recent_sessions": [
-            row_to_session(row).model_dump()
-            for row in reversed(rows[-12:])
-        ] if rows else [],
+        "recent_sessions": (
+            [row_to_session(row).model_dump() for row in reversed(rows[-12:])]
+            if rows
+            else []
+        ),
     }
 
 
@@ -730,14 +917,10 @@ def monthly_kpis() -> dict[str, Any]:
     planned_last = planned_sessions_for_month(last_start)
 
     this_month = [
-        s
-        for s in sessions
-        if this_start <= parse_dt(s.created_at) < next_start
+        s for s in sessions if this_start <= parse_dt(s.created_at) < next_start
     ]
     last_month = [
-        s
-        for s in sessions
-        if last_start <= parse_dt(s.created_at) < this_start
+        s for s in sessions if last_start <= parse_dt(s.created_at) < this_start
     ]
 
     this_stats = compute_period_stats(this_month, planned_this)
@@ -751,9 +934,7 @@ def monthly_kpis() -> dict[str, Any]:
         period_end = next_month_start(cursor)
         planned = planned_sessions_for_month(cursor)
         count = sum(
-            1
-            for s in sessions
-            if cursor <= parse_dt(s.created_at) < period_end
+            1 for s in sessions if cursor <= parse_dt(s.created_at) < period_end
         )
         if count >= planned:
             streak += 1
@@ -767,9 +948,7 @@ def monthly_kpis() -> dict[str, Any]:
         "this_month": this_stats,
         "last_month": last_stats,
         "deltas": {
-            "sessions_pct": pct_change(
-                this_stats["sessions"], last_stats["sessions"]
-            ),
+            "sessions_pct": pct_change(this_stats["sessions"], last_stats["sessions"]),
             "minutes_pct": pct_change(
                 this_stats["total_minutes"], last_stats["total_minutes"]
             ),
@@ -778,12 +957,11 @@ def monthly_kpis() -> dict[str, Any]:
             ),
         },
         "streak_months": streak,
-        "recent_sessions": [
-            row_to_session(row).model_dump()
-            for row in reversed(rows[-12:])
-        ]
-        if rows
-        else [],
+        "recent_sessions": (
+            [row_to_session(row).model_dump() for row in reversed(rows[-12:])]
+            if rows
+            else []
+        ),
     }
 
 

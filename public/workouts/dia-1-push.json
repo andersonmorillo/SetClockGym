@@ -1,9 +1,9 @@
 {
   "name": "Día 1 — Push",
-  "savedAt": "2026-07-23T23:58:20.579Z",
+  "savedAt": "2026-07-24T20:35:47.884761+00:00",
   "settings": {
-    "workSeconds": 40,
-    "restSeconds": 20,
+    "workSeconds": 51,
+    "restSeconds": 114,
     "rounds": 1,
     "includeUpperWarmUp": true,
     "includeLegWarmUp": false,
@@ -29,8 +29,8 @@
       "reps": 12,
       "repsLabel": "5-12",
       "notes": "Última serie → al fallo",
-      "workSeconds": 40,
-      "restSeconds": 20
+      "workSeconds": 41,
+      "restSeconds": 92
     },
     {
       "instanceId": "push-deep",
@@ -49,8 +49,8 @@
       "series": 3,
       "reps": 20,
       "repsLabel": "10-20",
-      "workSeconds": 40,
-      "restSeconds": 20
+      "workSeconds": 55,
+      "restSeconds": 120
     },
     {
       "instanceId": "push-pike",
@@ -70,8 +70,8 @@
       "reps": 12,
       "repsLabel": "8-12",
       "notes": "Pike push-ups (closest match in library)",
-      "workSeconds": 40,
-      "restSeconds": 20
+      "workSeconds": 47,
+      "restSeconds": 114
     },
     {
       "instanceId": "push-diamond",
@@ -90,8 +90,8 @@
       "series": 2,
       "reps": 0,
       "repsLabel": "AMRAP",
-      "workSeconds": 40,
-      "restSeconds": 20
+      "workSeconds": 60,
+      "restSeconds": 130
     }
   ]
 }

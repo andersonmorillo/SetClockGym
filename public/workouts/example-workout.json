@@ -1,9 +1,9 @@
 {
   "name": "Example upper body",
-  "savedAt": "2026-07-23T00:00:00.000Z",
+  "savedAt": "2026-07-24T19:53:47.001062+00:00",
   "settings": {
     "workSeconds": 40,
-    "restSeconds": 20,
+    "restSeconds": 60,
     "rounds": 1,
     "includeUpperWarmUp": true,
     "includeLegWarmUp": false,
@@ -17,7 +17,7 @@
       "reps": 12,
       "repsLabel": "8-12",
       "workSeconds": 40,
-      "restSeconds": 20,
+      "restSeconds": 60,
       "exercise": {
         "id": "0001",
         "name": "3/4 sit-up",

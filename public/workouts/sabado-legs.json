@@ -1,9 +1,9 @@
 {
   "name": "Sábado — Pierna",
-  "savedAt": "2026-07-24T00:39:49.669Z",
+  "savedAt": "2026-07-24T20:35:47.883760+00:00",
   "settings": {
-    "workSeconds": 40,
-    "restSeconds": 20,
+    "workSeconds": 42,
+    "restSeconds": 52,
     "rounds": 1,
     "includeUpperWarmUp": false,
     "includeLegWarmUp": true,
@@ -29,8 +29,8 @@
       "reps": 10,
       "repsLabel": "10",
       "notes": "Front squat (or use goblet squat)",
-      "workSeconds": 40,
-      "restSeconds": 20
+      "workSeconds": 31,
+      "restSeconds": 40
     },
     {
       "instanceId": "sabado-lunge",
@@ -51,7 +51,7 @@
       "repsLabel": "12/leg",
       "notes": "12 por pierna",
       "workSeconds": 40,
-      "restSeconds": 20
+      "restSeconds": 40
     },
     {
       "instanceId": "sabado-hip",
@@ -71,8 +71,8 @@
       "reps": 10,
       "repsLabel": "10",
       "notes": "Hip thrust substitute: glute bridge",
-      "workSeconds": 40,
-      "restSeconds": 20
+      "workSeconds": 35,
+      "restSeconds": 40
     },
     {
       "instanceId": "sabado-nordic",
@@ -92,8 +92,8 @@
       "reps": 8,
       "repsLabel": "6-8",
       "notes": "Nordic curl asistido (closest match)",
-      "workSeconds": 40,
-      "restSeconds": 20
+      "workSeconds": 34,
+      "restSeconds": 40
     },
     {
       "instanceId": "sabado-calf",
@@ -112,8 +112,8 @@
       "series": 4,
       "reps": 20,
       "repsLabel": "20",
-      "workSeconds": 40,
-      "restSeconds": 20
+      "workSeconds": 53,
+      "restSeconds": 76
     },
     {
       "instanceId": "sabado-plank",
@@ -134,7 +134,7 @@
       "repsLabel": "60 s",
       "notes": "Hold plank",
       "workSeconds": 60,
-      "restSeconds": 30
+      "restSeconds": 74
     }
   ]
 }

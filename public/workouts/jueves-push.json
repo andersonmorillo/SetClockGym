@@ -1,9 +1,9 @@
 {
   "name": "Jueves — Push",
-  "savedAt": "2026-07-24T00:39:49.666Z",
+  "savedAt": "2026-07-24T20:35:47.882759+00:00",
   "settings": {
-    "workSeconds": 40,
-    "restSeconds": 20,
+    "workSeconds": 46,
+    "restSeconds": 98,
     "rounds": 1,
     "includeUpperWarmUp": true,
     "includeLegWarmUp": false,
@@ -29,8 +29,8 @@
       "reps": 8,
       "repsLabel": "8",
       "notes": "Straight bar dips",
-      "workSeconds": 40,
-      "restSeconds": 20
+      "workSeconds": 35,
+      "restSeconds": 74
     },
     {
       "instanceId": "jueves-archer",
@@ -49,8 +49,8 @@
       "series": 3,
       "reps": 8,
       "repsLabel": "8",
-      "workSeconds": 40,
-      "restSeconds": 20
+      "workSeconds": 37,
+      "restSeconds": 79
     },
     {
       "instanceId": "jueves-decline",
@@ -69,8 +69,8 @@
       "series": 3,
       "reps": 12,
       "repsLabel": "12",
-      "workSeconds": 40,
-      "restSeconds": 20
+      "workSeconds": 46,
+      "restSeconds": 99
     },
     {
       "instanceId": "jueves-bench-dip",
@@ -89,8 +89,8 @@
       "series": 2,
       "reps": 0,
       "repsLabel": "AMRAP",
-      "workSeconds": 40,
-      "restSeconds": 20
+      "workSeconds": 60,
+      "restSeconds": 124
     },
     {
       "instanceId": "jueves-pike",
@@ -110,8 +110,8 @@
       "reps": 12,
       "repsLabel": "12",
       "notes": "Pike push-ups (closest match)",
-      "workSeconds": 40,
-      "restSeconds": 20
+      "workSeconds": 51,
+      "restSeconds": 114
     }
   ]
 }

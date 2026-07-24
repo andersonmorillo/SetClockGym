@@ -1,9 +1,9 @@
 {
   "name": "Viernes — Pull",
-  "savedAt": "2026-07-24T00:39:49.668Z",
+  "savedAt": "2026-07-24T20:35:47.882759+00:00",
   "settings": {
-    "workSeconds": 40,
-    "restSeconds": 20,
+    "workSeconds": 43,
+    "restSeconds": 77,
     "rounds": 1,
     "includeUpperWarmUp": true,
     "includeLegWarmUp": false,
@@ -28,8 +28,8 @@
       "series": 4,
       "reps": 10,
       "repsLabel": "6-10",
-      "workSeconds": 40,
-      "restSeconds": 20
+      "workSeconds": 38,
+      "restSeconds": 61
     },
     {
       "instanceId": "viernes-wide",
@@ -48,8 +48,8 @@
       "series": 3,
       "reps": 8,
       "repsLabel": "8",
-      "workSeconds": 40,
-      "restSeconds": 20
+      "workSeconds": 37,
+      "restSeconds": 61
     },
     {
       "instanceId": "viernes-commando",
@@ -70,7 +70,7 @@
       "repsLabel": "8",
       "notes": "Commando pull-ups (closest match: neutral grip)",
       "workSeconds": 40,
-      "restSeconds": 20
+      "restSeconds": 71
     },
     {
       "instanceId": "viernes-row",
@@ -89,8 +89,8 @@
       "series": 3,
       "reps": 12,
       "repsLabel": "12",
-      "workSeconds": 40,
-      "restSeconds": 20
+      "workSeconds": 48,
+      "restSeconds": 91
     },
     {
       "instanceId": "viernes-hanging",
@@ -109,8 +109,8 @@
       "series": 3,
       "reps": 12,
       "repsLabel": "12",
-      "workSeconds": 40,
-      "restSeconds": 20
+      "workSeconds": 51,
+      "restSeconds": 101
     }
   ]
 }

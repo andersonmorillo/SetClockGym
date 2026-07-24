@@ -5,7 +5,6 @@ import type { WorkoutExercise, WorkoutSettings } from '../types'
 import type { SessionFeedback } from '../utils/sessionFeedback'
 import { formatTime } from '../utils/formatTime'
 import { Encouragement } from './Encouragement'
-import { ExerciseFeedbackConfirm } from './ExerciseFeedbackConfirm'
 
 type Props = {
   workout: WorkoutExercise[]
@@ -33,22 +32,17 @@ export function ActiveTimer({
     running,
     current,
     progress,
-    pendingConfirm,
     toggleRunning,
     skipRest,
     skipSeries,
     skipExercise,
-    saveExerciseFeedback,
-    discardExerciseFeedback,
   } = useWorkoutTimer({ exercises: workout, settings, onComplete })
 
   const toggleRunningRef = useRef(toggleRunning)
   toggleRunningRef.current = toggleRunning
-  const confirming = pendingConfirm != null
 
   useEffect(() => {
     function onKeyDown(event: KeyboardEvent) {
-      if (confirming) return
       if (event.code !== 'Space' && event.key !== ' ') return
       if (event.repeat) return
 
@@ -71,27 +65,9 @@ export function ActiveTimer({
 
     window.addEventListener('keydown', onKeyDown)
     return () => window.removeEventListener('keydown', onKeyDown)
-  }, [confirming])
+  }, [])
 
   if (!current) return null
-
-  if (pendingConfirm) {
-    return (
-      <div className="timer-screen screen-enter feedback-confirm-screen">
-        <div className="timer-top">
-          <button type="button" className="ghost" onClick={onExit}>
-            Exit
-          </button>
-          <span className="elapsed">Total {formatTime(elapsedSeconds)}</span>
-        </div>
-        <ExerciseFeedbackConfirm
-          preview={pendingConfirm.preview}
-          onSave={(rpe) => saveExerciseFeedback(rpe)}
-          onDiscard={discardExerciseFeedback}
-        />
-      </div>
-    )
-  }
 
   const image = getExerciseMediaUrl(current.exercise, true)
   const nextIndex =

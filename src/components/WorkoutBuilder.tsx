@@ -1,9 +1,11 @@
 import { useEffect, useMemo, useRef, useState } from 'react'
 import { fetchExercises, getExerciseImageUrl } from '../api/exercises'
 import {
+  deleteWorkoutFromDb,
   fetchSavedWorkout,
   fetchSavedWorkouts,
   saveWorkoutToDb,
+  updateWorkoutInDb,
   type DbSavedWorkout,
 } from '../api/workouts'
 import {
@@ -62,6 +64,7 @@ export function WorkoutBuilder({
   const [saveError, setSaveError] = useState<string | null>(null)
   const [speakRoasts, setSpeakRoasts] = useState(isSpeakRoastsEnabled)
   const [dbWorkouts, setDbWorkouts] = useState<DbSavedWorkout[]>([])
+  const [activeWorkoutId, setActiveWorkoutId] = useState<number | null>(null)
   const fileInputRef = useRef<HTMLInputElement>(null)
 
   async function refreshDbWorkouts() {
@@ -127,18 +130,72 @@ export function WorkoutBuilder({
         return
       }
       const saved = createSavedWorkout(workoutName, settings, workout)
-      const stored = await saveWorkoutToDb(saved)
+      const stored =
+        activeWorkoutId == null
+          ? await saveWorkoutToDb(saved)
+          : await updateWorkoutInDb(activeWorkoutId, saved)
       saveWorkoutToLocalStorage(saved)
+      setActiveWorkoutId(stored.id)
       onWorkoutNameChange(stored.name)
       await refreshDbWorkouts()
       setSaveError(null)
-      setSaveMessage(`Saved “${stored.name}” to the database.`)
+      setSaveMessage(
+        `Saved “${stored.name}” to the database and public/workouts/${stored.slug}.json.`,
+      )
     } catch (err) {
       setSaveMessage(null)
       setSaveError(
         err instanceof Error
           ? err.message
           : 'Could not save the workout. Is the API running?',
+      )
+    }
+  }
+
+  async function handleSaveAsNew() {
+    try {
+      if (workout.length === 0) {
+        setSaveError('Add at least one exercise before saving.')
+        setSaveMessage(null)
+        return
+      }
+      const saved = createSavedWorkout(workoutName, settings, workout)
+      const stored = await saveWorkoutToDb(saved)
+      saveWorkoutToLocalStorage(saved)
+      setActiveWorkoutId(stored.id)
+      onWorkoutNameChange(stored.name)
+      await refreshDbWorkouts()
+      setSaveError(null)
+      setSaveMessage(
+        `Created “${stored.name}” as public/workouts/${stored.slug}.json.`,
+      )
+    } catch (err) {
+      setSaveMessage(null)
+      setSaveError(
+        err instanceof Error
+          ? err.message
+          : 'Could not save the workout. Is the API running?',
+      )
+    }
+  }
+
+  async function handleDelete(id: number, name: string) {
+    const confirmed = window.confirm(
+      `Delete “${name}” from the database and its JSON file?`,
+    )
+    if (!confirmed) return
+    try {
+      await deleteWorkoutFromDb(id)
+      if (activeWorkoutId === id) setActiveWorkoutId(null)
+      await refreshDbWorkouts()
+      setSaveError(null)
+      setSaveMessage(`Deleted “${name}”.`)
+    } catch (err) {
+      setSaveMessage(null)
+      setSaveError(
+        err instanceof Error
+          ? err.message
+          : 'Could not delete that workout.',
       )
     }
   }
@@ -162,6 +219,7 @@ export function WorkoutBuilder({
     if (!file) return
     try {
       const saved = await readWorkoutFromFile(file)
+      setActiveWorkoutId(null)
       applyLoadedWorkout(saved)
     } catch (err) {
       setSaveMessage(null)
@@ -178,6 +236,7 @@ export function WorkoutBuilder({
   async function handleDbLoad(id: number) {
     try {
       const saved = await fetchSavedWorkout(id)
+      setActiveWorkoutId(id)
       applyLoadedWorkout(saved)
     } catch (err) {
       setSaveMessage(null)
@@ -410,7 +469,28 @@ export function WorkoutBuilder({
             disabled={workout.length === 0}
             onClick={() => void handleSave()}
           >
-            Save workout
+            {activeWorkoutId == null ? 'Save workout' : 'Update workout'}
+          </button>
+          <button
+            type="button"
+            className="ghost"
+            disabled={workout.length === 0}
+            onClick={() => void handleSaveAsNew()}
+          >
+            Save as new
+          </button>
+          <button
+            type="button"
+            className="ghost"
+            onClick={() => {
+              setActiveWorkoutId(null)
+              onWorkoutNameChange('My workout')
+              onWorkoutChange([])
+              setSaveMessage('Cleared editor for a new workout.')
+              setSaveError(null)
+            }}
+          >
+            New workout
           </button>
           <button
             type="button"
@@ -427,6 +507,12 @@ export function WorkoutBuilder({
             onChange={(e) => handleFileChange(e.target.files)}
           />
         </div>
+        {activeWorkoutId != null && (
+          <p className="muted">
+            Editing saved workout #{activeWorkoutId}. Updates sync to
+            public/workouts.
+          </p>
+        )}
         <div className="preset-actions">
           {dbWorkouts.length === 0 ? (
             <p className="muted">
@@ -435,13 +521,26 @@ export function WorkoutBuilder({
             </p>
           ) : (
             dbWorkouts.map((item) => (
-              <button
+              <div
                 key={item.id}
-                type="button"
-                onClick={() => void handleDbLoad(item.id)}
+                className={`preset-item${
+                  activeWorkoutId === item.id ? ' is-active' : ''
+                }`}
               >
-                {item.name}
-              </button>
+                <button
+                  type="button"
+                  onClick={() => void handleDbLoad(item.id)}
+                >
+                  {item.name}
+                </button>
+                <button
+                  type="button"
+                  className="ghost preset-delete"
+                  onClick={() => void handleDelete(item.id, item.name)}
+                >
+                  Delete
+                </button>
+              </div>
             ))
           )}
         </div>

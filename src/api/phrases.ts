@@ -23,10 +23,23 @@ function mapPhrase(row: PhraseApiRow): PhraseClip {
   }
 }
 
+async function readApiError(response: Response, fallback: string): Promise<string> {
+  try {
+    const data: unknown = await response.json()
+    if (data && typeof data === 'object' && 'detail' in data) {
+      const detail = (data as { detail: unknown }).detail
+      if (typeof detail === 'string' && detail.trim()) return detail
+    }
+  } catch {
+    // ignore parse errors
+  }
+  return `${fallback} (HTTP ${response.status})`
+}
+
 export async function fetchPhrases(): Promise<PhraseClip[]> {
   const response = await apiFetch('/api/phrases')
   if (!response.ok) {
-    throw new Error('Could not load phrases')
+    throw new Error(await readApiError(response, 'Could not load phrases'))
   }
   const rows = (await response.json()) as PhraseApiRow[]
   return rows.map(mapPhrase)
@@ -45,8 +58,7 @@ export async function savePhrase(
     body,
   })
   if (!response.ok) {
-    const detail = await response.text()
-    throw new Error(detail || 'Could not save phrase')
+    throw new Error(await readApiError(response, 'Could not save phrase'))
   }
   return mapPhrase((await response.json()) as PhraseApiRow)
 }
@@ -56,6 +68,6 @@ export async function deletePhrase(id: number): Promise<void> {
     method: 'DELETE',
   })
   if (!response.ok) {
-    throw new Error('Could not delete phrase')
+    throw new Error(await readApiError(response, 'Could not delete phrase'))
   }
 }

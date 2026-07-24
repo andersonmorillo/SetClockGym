@@ -170,6 +170,28 @@
   background: rgba(200, 241, 53, 0.16);
 }
 
+.preset-item {
+  display: inline-flex;
+  align-items: stretch;
+  gap: 0.35rem;
+}
+
+.preset-item.is-active > button:first-child {
+  border-color: var(--accent);
+  background: rgba(200, 241, 53, 0.22);
+}
+
+.preset-delete {
+  border-color: rgba(255, 120, 120, 0.35) !important;
+  background: rgba(255, 80, 80, 0.08) !important;
+  color: #ffb4b4 !important;
+  font-weight: 600;
+}
+
+.preset-delete:hover {
+  background: rgba(255, 80, 80, 0.18) !important;
+}
+
 .notes {
   margin: 0;
   font-size: 0.95rem;
