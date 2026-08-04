@@ -14,99 +14,99 @@
     {
       "instanceId": "sabado-squat",
       "exercise": {
-        "id": "0042",
-        "name": "barbell front squat",
-        "equipment": "barbell",
+        "id": "1760",
+        "name": "dumbbell goblet squat",
+        "equipment": "dumbbell",
         "primaryMuscles": [
-          "glutes"
+          "quads"
         ],
         "category": "upper legs",
-        "image": "https://raw.githubusercontent.com/hasaneyldrm/exercises-dataset/main/images/0042-zG0zs85.jpg",
-        "gifUrl": "https://raw.githubusercontent.com/hasaneyldrm/exercises-dataset/main/videos/0042-zG0zs85.gif",
+        "image": "https://raw.githubusercontent.com/hasaneyldrm/exercises-dataset/main/images/1760-yn8yg1r.jpg",
+        "gifUrl": "https://raw.githubusercontent.com/hasaneyldrm/exercises-dataset/main/videos/1760-yn8yg1r.gif",
         "attribution": "© Gym visual — https://gymvisual.com/"
       },
       "series": 4,
       "reps": 10,
       "repsLabel": "10",
-      "notes": "Front squat (or use goblet squat)",
+      "notes": "Front squat substitute: goblet squat",
       "workSeconds": 31,
       "restSeconds": 40
     },
     {
       "instanceId": "sabado-lunge",
       "exercise": {
-        "id": "1460",
-        "name": "walking lunge",
-        "equipment": "body weight",
+        "id": "0336",
+        "name": "dumbbell lunge",
+        "equipment": "dumbbell",
         "primaryMuscles": [
           "glutes"
         ],
         "category": "upper legs",
-        "image": "https://raw.githubusercontent.com/hasaneyldrm/exercises-dataset/main/images/1460-IZVHb27.jpg",
-        "gifUrl": "https://raw.githubusercontent.com/hasaneyldrm/exercises-dataset/main/videos/1460-IZVHb27.gif",
+        "image": "https://raw.githubusercontent.com/hasaneyldrm/exercises-dataset/main/images/0336-RRWFUcw.jpg",
+        "gifUrl": "https://raw.githubusercontent.com/hasaneyldrm/exercises-dataset/main/videos/0336-RRWFUcw.gif",
         "attribution": "© Gym visual — https://gymvisual.com/"
       },
       "series": 3,
       "reps": 12,
       "repsLabel": "12/leg",
-      "notes": "12 por pierna",
+      "notes": "Walking lunge with dumbbells, 12 per leg",
       "workSeconds": 40,
       "restSeconds": 40
     },
     {
       "instanceId": "sabado-hip",
       "exercise": {
-        "id": "1409",
-        "name": "barbell glute bridge",
-        "equipment": "barbell",
+        "id": "0413",
+        "name": "dumbbell squat",
+        "equipment": "dumbbell",
         "primaryMuscles": [
           "glutes"
         ],
         "category": "upper legs",
-        "image": "https://raw.githubusercontent.com/hasaneyldrm/exercises-dataset/main/images/1409-qKBpF7I.jpg",
-        "gifUrl": "https://raw.githubusercontent.com/hasaneyldrm/exercises-dataset/main/videos/1409-qKBpF7I.gif",
+        "image": "https://raw.githubusercontent.com/hasaneyldrm/exercises-dataset/main/images/0413-HsvHqgf.jpg",
+        "gifUrl": "https://raw.githubusercontent.com/hasaneyldrm/exercises-dataset/main/videos/0413-HsvHqgf.gif",
         "attribution": "© Gym visual — https://gymvisual.com/"
       },
       "series": 3,
       "reps": 10,
       "repsLabel": "10",
-      "notes": "Hip thrust substitute: glute bridge",
+      "notes": "Glute bridge substitute: dumbbell squat",
       "workSeconds": 35,
       "restSeconds": 40
     },
     {
-      "instanceId": "sabado-nordic",
+      "instanceId": "sabado-rdl",
       "exercise": {
-        "id": "1417",
-        "name": "exercise ball one legged diagonal kick hamstring curl",
-        "equipment": "stability ball",
+        "id": "1757",
+        "name": "dumbbell single leg deadlift",
+        "equipment": "dumbbell",
         "primaryMuscles": [
           "glutes"
         ],
         "category": "upper legs",
-        "image": "https://raw.githubusercontent.com/hasaneyldrm/exercises-dataset/main/images/1417-GOJKFfO.jpg",
-        "gifUrl": "https://raw.githubusercontent.com/hasaneyldrm/exercises-dataset/main/videos/1417-GOJKFfO.gif",
+        "image": "https://raw.githubusercontent.com/hasaneyldrm/exercises-dataset/main/images/1757-gKozT8X.jpg",
+        "gifUrl": "https://raw.githubusercontent.com/hasaneyldrm/exercises-dataset/main/videos/1757-gKozT8X.gif",
         "attribution": "© Gym visual — https://gymvisual.com/"
       },
       "series": 3,
       "reps": 8,
-      "repsLabel": "6-8",
-      "notes": "Nordic curl asistido (closest match)",
+      "repsLabel": "6-8/leg",
+      "notes": "Nordic curl substitute: single-leg RDL with dumbbells",
       "workSeconds": 34,
       "restSeconds": 40
     },
     {
       "instanceId": "sabado-calf",
       "exercise": {
-        "id": "1373",
-        "name": "bodyweight standing calf raise",
-        "equipment": "body weight",
+        "id": "0417",
+        "name": "dumbbell standing calf raise",
+        "equipment": "dumbbell",
         "primaryMuscles": [
           "calves"
         ],
         "category": "lower legs",
-        "image": "https://raw.githubusercontent.com/hasaneyldrm/exercises-dataset/main/images/1373-bJYHBIN.jpg",
-        "gifUrl": "https://raw.githubusercontent.com/hasaneyldrm/exercises-dataset/main/videos/1373-bJYHBIN.gif",
+        "image": "https://raw.githubusercontent.com/hasaneyldrm/exercises-dataset/main/images/0417-dPmaUaU.jpg",
+        "gifUrl": "https://raw.githubusercontent.com/hasaneyldrm/exercises-dataset/main/videos/0417-dPmaUaU.gif",
         "attribution": "© Gym visual — https://gymvisual.com/"
       },
       "series": 4,
@@ -118,21 +118,21 @@
     {
       "instanceId": "sabado-plank",
       "exercise": {
-        "id": "3665",
-        "name": "power point plank",
+        "id": "0872",
+        "name": "reverse crunch",
         "equipment": "body weight",
         "primaryMuscles": [
           "abs"
         ],
         "category": "waist",
-        "image": "https://raw.githubusercontent.com/hasaneyldrm/exercises-dataset/main/images/3665-hCjGsRQ.jpg",
-        "gifUrl": "https://raw.githubusercontent.com/hasaneyldrm/exercises-dataset/main/videos/3665-hCjGsRQ.gif",
+        "image": "https://raw.githubusercontent.com/hasaneyldrm/exercises-dataset/main/images/0872-nCU1Ekp.jpg",
+        "gifUrl": "https://raw.githubusercontent.com/hasaneyldrm/exercises-dataset/main/videos/0872-nCU1Ekp.gif",
         "attribution": "© Gym visual — https://gymvisual.com/"
       },
       "series": 3,
-      "reps": 0,
-      "repsLabel": "60 s",
-      "notes": "Hold plank",
+      "reps": 15,
+      "repsLabel": "15",
+      "notes": "Floor core finisher: reverse crunch",
       "workSeconds": 60,
       "restSeconds": 74
     }

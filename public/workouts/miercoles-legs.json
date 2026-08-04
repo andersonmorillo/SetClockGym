@@ -14,35 +14,36 @@
     {
       "instanceId": "legs-squat",
       "exercise": {
-        "id": "0043",
-        "name": "barbell full squat",
-        "equipment": "barbell",
+        "id": "1760",
+        "name": "dumbbell goblet squat",
+        "equipment": "dumbbell",
         "primaryMuscles": [
-          "glutes"
+          "quads"
         ],
         "category": "upper legs",
-        "image": "https://raw.githubusercontent.com/hasaneyldrm/exercises-dataset/main/images/0043-qXTaZnJ.jpg",
-        "gifUrl": "https://raw.githubusercontent.com/hasaneyldrm/exercises-dataset/main/videos/0043-qXTaZnJ.gif",
+        "image": "https://raw.githubusercontent.com/hasaneyldrm/exercises-dataset/main/images/1760-yn8yg1r.jpg",
+        "gifUrl": "https://raw.githubusercontent.com/hasaneyldrm/exercises-dataset/main/videos/1760-yn8yg1r.gif",
         "attribution": "© Gym visual — https://gymvisual.com/"
       },
       "series": 4,
       "reps": 8,
       "repsLabel": "6-8",
+      "notes": "Goblet squat with a single dumbbell",
       "workSeconds": 35,
       "restSeconds": 41
     },
     {
       "instanceId": "legs-rdl",
       "exercise": {
-        "id": "0085",
-        "name": "barbell romanian deadlift",
-        "equipment": "barbell",
+        "id": "1459",
+        "name": "dumbbell romanian deadlift",
+        "equipment": "dumbbell",
         "primaryMuscles": [
           "glutes"
         ],
         "category": "upper legs",
-        "image": "https://raw.githubusercontent.com/hasaneyldrm/exercises-dataset/main/images/0085-wQ2c4XD.jpg",
-        "gifUrl": "https://raw.githubusercontent.com/hasaneyldrm/exercises-dataset/main/videos/0085-wQ2c4XD.gif",
+        "image": "https://raw.githubusercontent.com/hasaneyldrm/exercises-dataset/main/images/1459-rR0LJzx.jpg",
+        "gifUrl": "https://raw.githubusercontent.com/hasaneyldrm/exercises-dataset/main/videos/1459-rR0LJzx.gif",
         "attribution": "© Gym visual — https://gymvisual.com/"
       },
       "series": 3,
@@ -54,36 +55,36 @@
     {
       "instanceId": "legs-bulgarian",
       "exercise": {
-        "id": "0099",
-        "name": "barbell single leg split squat",
-        "equipment": "barbell",
+        "id": "0410",
+        "name": "dumbbell single leg split squat",
+        "equipment": "dumbbell",
         "primaryMuscles": [
           "quads"
         ],
         "category": "upper legs",
-        "image": "https://raw.githubusercontent.com/hasaneyldrm/exercises-dataset/main/images/0099-gGNQmVt.jpg",
-        "gifUrl": "https://raw.githubusercontent.com/hasaneyldrm/exercises-dataset/main/videos/0099-gGNQmVt.gif",
+        "image": "https://raw.githubusercontent.com/hasaneyldrm/exercises-dataset/main/images/0410-qx4fgX7.jpg",
+        "gifUrl": "https://raw.githubusercontent.com/hasaneyldrm/exercises-dataset/main/videos/0410-qx4fgX7.gif",
         "attribution": "© Gym visual — https://gymvisual.com/"
       },
       "series": 3,
       "reps": 10,
-      "repsLabel": "10",
-      "notes": "Bulgarian split squat (closest match)",
+      "repsLabel": "10/leg",
+      "notes": "Bulgarian split squat with dumbbells",
       "workSeconds": 43,
       "restSeconds": 61
     },
     {
       "instanceId": "legs-calf",
       "exercise": {
-        "id": "1373",
-        "name": "bodyweight standing calf raise",
-        "equipment": "body weight",
+        "id": "0417",
+        "name": "dumbbell standing calf raise",
+        "equipment": "dumbbell",
         "primaryMuscles": [
           "calves"
         ],
         "category": "lower legs",
-        "image": "https://raw.githubusercontent.com/hasaneyldrm/exercises-dataset/main/images/1373-bJYHBIN.jpg",
-        "gifUrl": "https://raw.githubusercontent.com/hasaneyldrm/exercises-dataset/main/videos/1373-bJYHBIN.gif",
+        "image": "https://raw.githubusercontent.com/hasaneyldrm/exercises-dataset/main/images/0417-dPmaUaU.jpg",
+        "gifUrl": "https://raw.githubusercontent.com/hasaneyldrm/exercises-dataset/main/videos/0417-dPmaUaU.gif",
         "attribution": "© Gym visual — https://gymvisual.com/"
       },
       "series": 4,
@@ -95,21 +96,21 @@
     {
       "instanceId": "legs-knee",
       "exercise": {
-        "id": "1761",
-        "name": "hanging oblique knee raise",
+        "id": "0620",
+        "name": "lying leg raise flat bench",
         "equipment": "body weight",
         "primaryMuscles": [
           "abs"
         ],
         "category": "waist",
-        "image": "https://raw.githubusercontent.com/hasaneyldrm/exercises-dataset/main/images/1761-BaE7O6U.jpg",
-        "gifUrl": "https://raw.githubusercontent.com/hasaneyldrm/exercises-dataset/main/videos/1761-BaE7O6U.gif",
+        "image": "https://raw.githubusercontent.com/hasaneyldrm/exercises-dataset/main/images/0620-WhuFnR7.jpg",
+        "gifUrl": "https://raw.githubusercontent.com/hasaneyldrm/exercises-dataset/main/videos/0620-WhuFnR7.gif",
         "attribution": "© Gym visual — https://gymvisual.com/"
       },
       "series": 3,
       "reps": 15,
       "repsLabel": "15",
-      "notes": "Hanging knee raises",
+      "notes": "Lying leg raises on the floor",
       "workSeconds": 55,
       "restSeconds": 93
     }
