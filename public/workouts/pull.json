@@ -1,9 +1,9 @@
 {
-  "name": "Viernes — Pull",
-  "savedAt": "2026-07-24T23:03:31.738433+00:00",
+  "name": "Pull",
+  "savedAt": "2026-08-08T01:20:12.824915+00:00",
   "settings": {
-    "workSeconds": 43,
-    "restSeconds": 77,
+    "workSeconds": 40,
+    "restSeconds": 20,
     "rounds": 1,
     "includeUpperWarmUp": true,
     "includeLegWarmUp": false,
@@ -12,24 +12,25 @@
   },
   "exercises": [
     {
-      "instanceId": "viernes-chin",
+      "instanceId": "viernes-commando",
       "exercise": {
-        "id": "1326",
-        "name": "chin-up",
+        "id": "0651",
+        "name": "pull up (neutral grip)",
         "equipment": "body weight",
         "primaryMuscles": [
           "lats"
         ],
         "category": "back",
-        "image": "https://raw.githubusercontent.com/hasaneyldrm/exercises-dataset/main/images/1326-T2mxWqc.jpg",
-        "gifUrl": "https://raw.githubusercontent.com/hasaneyldrm/exercises-dataset/main/videos/1326-T2mxWqc.gif",
+        "image": "https://raw.githubusercontent.com/hasaneyldrm/exercises-dataset/main/images/0651-0V2YQjW.jpg",
+        "gifUrl": "https://raw.githubusercontent.com/hasaneyldrm/exercises-dataset/main/videos/0651-0V2YQjW.gif",
         "attribution": "© Gym visual — https://gymvisual.com/"
       },
-      "series": 4,
+      "series": 3,
       "reps": 6,
-      "repsLabel": "6-10",
-      "workSeconds": 38,
-      "restSeconds": 61,
+      "repsLabel": "8",
+      "notes": "Commando pull-ups (closest match: neutral grip)",
+      "workSeconds": 30,
+      "restSeconds": 20,
       "transitionSeconds": 0
     },
     {
@@ -48,31 +49,30 @@
       },
       "series": 3,
       "reps": 5,
-      "repsLabel": "5-8",
-      "workSeconds": 37,
-      "restSeconds": 61,
+      "repsLabel": "8",
+      "workSeconds": 30,
+      "restSeconds": 20,
       "transitionSeconds": 0
     },
     {
-      "instanceId": "viernes-commando",
+      "instanceId": "viernes-chin",
       "exercise": {
-        "id": "0651",
-        "name": "pull up (neutral grip)",
+        "id": "1326",
+        "name": "chin-up",
         "equipment": "body weight",
         "primaryMuscles": [
           "lats"
         ],
         "category": "back",
-        "image": "https://raw.githubusercontent.com/hasaneyldrm/exercises-dataset/main/images/0651-0V2YQjW.jpg",
-        "gifUrl": "https://raw.githubusercontent.com/hasaneyldrm/exercises-dataset/main/videos/0651-0V2YQjW.gif",
+        "image": "https://raw.githubusercontent.com/hasaneyldrm/exercises-dataset/main/images/1326-T2mxWqc.jpg",
+        "gifUrl": "https://raw.githubusercontent.com/hasaneyldrm/exercises-dataset/main/videos/1326-T2mxWqc.gif",
         "attribution": "© Gym visual — https://gymvisual.com/"
       },
-      "series": 2,
-      "reps": 5,
-      "repsLabel": "5-8",
-      "notes": "Commando pull-ups (closest match: neutral grip)",
-      "workSeconds": 40,
-      "restSeconds": 72,
+      "series": 4,
+      "reps": 6,
+      "repsLabel": "6-10",
+      "workSeconds": 30,
+      "restSeconds": 20,
       "transitionSeconds": 0
     },
     {
@@ -89,11 +89,11 @@
         "gifUrl": "https://raw.githubusercontent.com/hasaneyldrm/exercises-dataset/main/videos/0499-bZGHsAZ.gif",
         "attribution": "© Gym visual — https://gymvisual.com/"
       },
-      "series": 3,
-      "reps": 12,
+      "series": 4,
+      "reps": 8,
       "repsLabel": "12",
-      "workSeconds": 48,
-      "restSeconds": 91,
+      "workSeconds": 40,
+      "restSeconds": 20,
       "transitionSeconds": 0
     },
     {
@@ -113,8 +113,8 @@
       "series": 3,
       "reps": 12,
       "repsLabel": "12",
-      "workSeconds": 51,
-      "restSeconds": 101,
+      "workSeconds": 40,
+      "restSeconds": 20,
       "transitionSeconds": 0
     }
   ]
