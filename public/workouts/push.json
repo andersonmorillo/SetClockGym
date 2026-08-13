@@ -1,6 +1,6 @@
 {
   "name": "Push",
-  "savedAt": "2026-08-08T00:35:29.344041+00:00",
+  "savedAt": "2026-08-12T23:31:52.844793+00:00",
   "settings": {
     "workSeconds": 40,
     "restSeconds": 20,
@@ -110,34 +110,12 @@
         "gifUrl": "https://raw.githubusercontent.com/hasaneyldrm/exercises-dataset/main/videos/1296-sVvXT5J.gif",
         "attribution": "© Gym visual — https://gymvisual.com/"
       },
-      "series": 2,
-      "reps": 12,
+      "series": 3,
+      "reps": 8,
       "repsLabel": "12",
       "notes": "Pike push-ups (closest match)",
       "workSeconds": 40,
       "restSeconds": 20,
-      "transitionSeconds": 0
-    },
-    {
-      "instanceId": "jueves-forearm-fail",
-      "exercise": {
-        "id": "0401",
-        "name": "dumbbell seated palms up wrist curl",
-        "equipment": "dumbbell",
-        "primaryMuscles": [
-          "forearms"
-        ],
-        "category": "lower arms",
-        "image": "https://raw.githubusercontent.com/hasaneyldrm/exercises-dataset/main/images/0401-2dImyQ8.jpg",
-        "gifUrl": "https://raw.githubusercontent.com/hasaneyldrm/exercises-dataset/main/videos/0401-2dImyQ8.gif",
-        "attribution": "© Gym visual — https://gymvisual.com/"
-      },
-      "series": 4,
-      "reps": 0,
-      "repsLabel": "AMRAP",
-      "notes": "Finisher: antebrazo al fallo",
-      "workSeconds": 45,
-      "restSeconds": 60,
       "transitionSeconds": 0
     }
   ]

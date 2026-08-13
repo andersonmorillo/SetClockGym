@@ -1,0 +1,1 @@
+PULL_DEBUG:["viernes-commando","viernes-wide","viernes-chin","viernes-row","viernes-hanging","viernes-deadhang-fail"]

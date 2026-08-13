@@ -116,6 +116,28 @@
       "workSeconds": 40,
       "restSeconds": 20,
       "transitionSeconds": 0
+    },
+    {
+      "instanceId": "viernes-deadhang-fail",
+      "exercise": {
+        "id": "dead-hang",
+        "name": "Dead hang",
+        "equipment": "body weight",
+        "primaryMuscles": [
+          "forearms"
+        ],
+        "category": "back",
+        "image": "https://raw.githubusercontent.com/hasaneyldrm/exercises-dataset/main/images/0472-I3tsCnC.jpg",
+        "gifUrl": "https://raw.githubusercontent.com/hasaneyldrm/exercises-dataset/main/videos/0472-I3tsCnC.gif",
+        "attribution": "© Gym visual — https://gymvisual.com/"
+      },
+      "series": 4,
+      "reps": 0,
+      "repsLabel": "Tiempo",
+      "notes": "Finisher: dead hang (agarre) al fallo",
+      "workSeconds": 40,
+      "restSeconds": 60,
+      "transitionSeconds": 0
     }
   ]
 }
