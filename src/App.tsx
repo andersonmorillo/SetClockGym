@@ -14,7 +14,11 @@ import {
   type ActiveSessionSnapshot,
   type ActiveTimerSnapshot,
 } from './data/activeSession'
-import { loadWorkoutFromLocalStorage } from './data/savedWorkouts'
+import {
+  createSavedWorkout,
+  loadWorkoutFromLocalStorage,
+  saveWorkoutToLocalStorage,
+} from './data/savedWorkouts'
 import { useElapsedTimer } from './hooks/useElapsedTimer'
 import { stopWorkoutAudio } from './utils/workoutAudio'
 import {
@@ -79,6 +83,12 @@ function App() {
   )
   const historySavedRef = useRef(false)
   const sessionFeedbackRef = useRef<SessionFeedback | null>(null)
+
+  useEffect(() => {
+    saveWorkoutToLocalStorage(
+      createSavedWorkout(workoutName, settings, workout),
+    )
+  }, [workoutName, settings, workout])
 
   async function persistHistory(
     elapsedSeconds: number,

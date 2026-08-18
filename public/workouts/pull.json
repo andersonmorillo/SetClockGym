@@ -1,6 +1,6 @@
 {
   "name": "Pull",
-  "savedAt": "2026-08-08T01:20:12.824915+00:00",
+  "savedAt": "2026-08-17T22:52:10.465Z",
   "settings": {
     "workSeconds": 40,
     "restSeconds": 20,
@@ -118,6 +118,28 @@
       "transitionSeconds": 0
     },
     {
+      "instanceId": "pull-iso-lsit",
+      "exercise": {
+        "id": "3419",
+        "name": "l-sit on floor",
+        "equipment": "body weight",
+        "primaryMuscles": [
+          "abs"
+        ],
+        "category": "waist",
+        "image": "https://raw.githubusercontent.com/hasaneyldrm/exercises-dataset/main/images/3419-UpWmA5E.jpg",
+        "gifUrl": "https://raw.githubusercontent.com/hasaneyldrm/exercises-dataset/main/videos/3419-UpWmA5E.gif",
+        "attribution": "© Gym visual — https://gymvisual.com/"
+      },
+      "series": 3,
+      "reps": 0,
+      "repsLabel": "Hold",
+      "notes": "Isometric finisher: legs straight, hips locked. Scale with tucked knees.",
+      "workSeconds": 30,
+      "restSeconds": 10,
+      "transitionSeconds": 0
+    },
+    {
       "instanceId": "viernes-deadhang-fail",
       "exercise": {
         "id": "dead-hang",
@@ -131,12 +153,12 @@
         "gifUrl": "https://raw.githubusercontent.com/hasaneyldrm/exercises-dataset/main/videos/0472-I3tsCnC.gif",
         "attribution": "© Gym visual — https://gymvisual.com/"
       },
-      "series": 4,
+      "series": 3,
       "reps": 0,
-      "repsLabel": "Tiempo",
-      "notes": "Finisher: dead hang (agarre) al fallo",
+      "repsLabel": "Hold",
+      "notes": "Isometric finisher: dead hang. Last set to failure.",
       "workSeconds": 40,
-      "restSeconds": 60,
+      "restSeconds": 20,
       "transitionSeconds": 0
     }
   ]

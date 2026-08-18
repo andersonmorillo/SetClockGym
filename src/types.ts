@@ -58,12 +58,9 @@ export const UPPER_BODY_COOLDOWN_VIDEO_ID = '0ZkuKwjyWtI'
 export const LEG_COOLDOWN_VIDEO_ID = 'myN0dGpJabc'
 
 export const PRESET_WORKOUTS = [
-  { label: 'Lunes — Push', path: '/workouts/lunes-push.json' },
-  { label: 'Martes — Pull', path: '/workouts/martes-pull.json' },
-  { label: 'Miércoles — Legs', path: '/workouts/miercoles-legs.json' },
-  { label: 'Jueves — Push', path: '/workouts/jueves-push.json' },
-  { label: 'Viernes — Pull', path: '/workouts/viernes-pull.json' },
-  { label: 'Sábado — Pierna', path: '/workouts/sabado-legs.json' },
+  { label: 'Push', path: '/workouts/push.json' },
+  { label: 'Pull', path: '/workouts/pull.json' },
+  { label: 'Legs', path: '/workouts/legs.json' },
 ] as const
 
 export type VideoStep = {

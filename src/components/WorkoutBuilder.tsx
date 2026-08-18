@@ -10,13 +10,15 @@ import {
 } from '../api/workouts'
 import {
   createSavedWorkout,
+  loadWorkoutFromUrl,
   readWorkoutFromFile,
   saveWorkoutToLocalStorage,
 } from '../data/savedWorkouts'
-import type {
-  Exercise,
-  WorkoutExercise,
-  WorkoutSettings,
+import {
+  PRESET_WORKOUTS,
+  type Exercise,
+  type WorkoutExercise,
+  type WorkoutSettings,
 } from '../types'
 import { estimateWorkoutSeconds } from '../utils/estimateDuration'
 import { formatTime } from '../utils/formatTime'
@@ -66,7 +68,11 @@ export function WorkoutBuilder({
   const [speakRoasts, setSpeakRoasts] = useState(isSpeakRoastsEnabled)
   const [dbWorkouts, setDbWorkouts] = useState<DbSavedWorkout[]>([])
   const [activeWorkoutId, setActiveWorkoutId] = useState<number | null>(null)
+  const [activePresetPath, setActivePresetPath] = useState<string | null>(null)
   const fileInputRef = useRef<HTMLInputElement>(null)
+  const extraDbWorkouts = dbWorkouts.filter(
+    (item) => !PRESET_WORKOUTS.some((preset) => preset.label === item.name),
+  )
 
   async function refreshDbWorkouts() {
     try {
@@ -221,6 +227,7 @@ export function WorkoutBuilder({
     try {
       const saved = await readWorkoutFromFile(file)
       setActiveWorkoutId(null)
+      setActivePresetPath(null)
       applyLoadedWorkout(saved)
     } catch (err) {
       setSaveMessage(null)
@@ -234,10 +241,31 @@ export function WorkoutBuilder({
     }
   }
 
+  async function handlePresetLoad(preset: (typeof PRESET_WORKOUTS)[number]) {
+    try {
+      const saved = await loadWorkoutFromUrl(preset.path)
+      const match = dbWorkouts.find(
+        (row) =>
+          row.name === saved.name || `/workouts/${row.slug}.json` === preset.path,
+      )
+      setActiveWorkoutId(match?.id ?? null)
+      setActivePresetPath(preset.path)
+      applyLoadedWorkout(saved)
+    } catch (err) {
+      setSaveMessage(null)
+      setSaveError(
+        err instanceof Error
+          ? err.message
+          : 'Could not load that routine file.',
+      )
+    }
+  }
+
   async function handleDbLoad(id: number) {
     try {
       const saved = await fetchSavedWorkout(id)
       setActiveWorkoutId(id)
+      setActivePresetPath(null)
       applyLoadedWorkout(saved)
     } catch (err) {
       setSaveMessage(null)
@@ -496,6 +524,7 @@ export function WorkoutBuilder({
             className="ghost"
             onClick={() => {
               setActiveWorkoutId(null)
+              setActivePresetPath(null)
               onWorkoutNameChange('My workout')
               onWorkoutChange([])
               setSaveMessage('Cleared editor for a new workout.')
@@ -526,35 +555,43 @@ export function WorkoutBuilder({
           </p>
         )}
         <div className="preset-actions">
-          {dbWorkouts.length === 0 ? (
-            <p className="muted">
-              No saved workouts yet. Start the API to load day presets, then
-              Save.
-            </p>
-          ) : (
-            dbWorkouts.map((item) => (
-              <div
-                key={item.id}
-                className={`preset-item${
-                  activeWorkoutId === item.id ? ' is-active' : ''
-                }`}
+          {PRESET_WORKOUTS.map((preset) => (
+            <div
+              key={preset.path}
+              className={`preset-item${
+                activePresetPath === preset.path ? ' is-active' : ''
+              }`}
+            >
+              <button
+                type="button"
+                onClick={() => void handlePresetLoad(preset)}
               >
-                <button
-                  type="button"
-                  onClick={() => void handleDbLoad(item.id)}
-                >
-                  {item.name}
-                </button>
-                <button
-                  type="button"
-                  className="ghost preset-delete"
-                  onClick={() => void handleDelete(item.id, item.name)}
-                >
-                  Delete
-                </button>
-              </div>
-            ))
-          )}
+                {preset.label}
+              </button>
+            </div>
+          ))}
+          {extraDbWorkouts.map((item) => (
+            <div
+              key={item.id}
+              className={`preset-item${
+                activeWorkoutId === item.id ? ' is-active' : ''
+              }`}
+            >
+              <button
+                type="button"
+                onClick={() => void handleDbLoad(item.id)}
+              >
+                {item.name}
+              </button>
+              <button
+                type="button"
+                className="ghost preset-delete"
+                onClick={() => void handleDelete(item.id, item.name)}
+              >
+                Delete
+              </button>
+            </div>
+          ))}
         </div>
         <div className="start-inline">
           {workout.length > 0 && (

@@ -1,6 +1,6 @@
 {
   "name": "Push",
-  "savedAt": "2026-08-12T23:31:52.844793+00:00",
+  "savedAt": "2026-08-17T22:52:10.465Z",
   "settings": {
     "workSeconds": 40,
     "restSeconds": 20,
@@ -116,6 +116,50 @@
       "notes": "Pike push-ups (closest match)",
       "workSeconds": 40,
       "restSeconds": 20,
+      "transitionSeconds": 0
+    },
+    {
+      "instanceId": "push-iso-chest",
+      "exercise": {
+        "id": "1297",
+        "name": "isometric chest squeeze",
+        "equipment": "body weight",
+        "primaryMuscles": [
+          "pectorals"
+        ],
+        "category": "chest",
+        "image": "https://raw.githubusercontent.com/hasaneyldrm/exercises-dataset/main/images/1297-HbSG1Pw.jpg",
+        "gifUrl": "https://raw.githubusercontent.com/hasaneyldrm/exercises-dataset/main/videos/1297-HbSG1Pw.gif",
+        "attribution": "© Gym visual — https://gymvisual.com/"
+      },
+      "series": 3,
+      "reps": 0,
+      "repsLabel": "Hold",
+      "notes": "Isometric finisher: palms together at chest height, squeeze and hold.",
+      "workSeconds": 40,
+      "restSeconds": 20,
+      "transitionSeconds": 0
+    },
+    {
+      "instanceId": "push-iso-plank",
+      "exercise": {
+        "id": "3665",
+        "name": "power point plank",
+        "equipment": "body weight",
+        "primaryMuscles": [
+          "abs"
+        ],
+        "category": "waist",
+        "image": "https://raw.githubusercontent.com/hasaneyldrm/exercises-dataset/main/images/3665-hCjGsRQ.jpg",
+        "gifUrl": "https://raw.githubusercontent.com/hasaneyldrm/exercises-dataset/main/videos/3665-hCjGsRQ.gif",
+        "attribution": "© Gym visual — https://gymvisual.com/"
+      },
+      "series": 3,
+      "reps": 0,
+      "repsLabel": "Hold",
+      "notes": "Isometric finisher: rigid plank. Hold each set.",
+      "workSeconds": 30,
+      "restSeconds": 15,
       "transitionSeconds": 0
     }
   ]

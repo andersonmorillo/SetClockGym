@@ -1,6 +1,6 @@
 {
   "name": "Legs",
-  "savedAt": "2026-08-08T00:38:16.511665+00:00",
+  "savedAt": "2026-08-17T22:52:10.465Z",
   "settings": {
     "workSeconds": 40,
     "restSeconds": 20,
@@ -119,25 +119,47 @@
       "transitionSeconds": 0
     },
     {
-      "instanceId": "legs-calf-fail",
+      "instanceId": "legs-iso-glute-bridge",
       "exercise": {
-        "id": "0417",
-        "name": "dumbbell standing calf raise",
-        "equipment": "dumbbell",
+        "id": "3013",
+        "name": "low glute bridge on floor",
+        "equipment": "body weight",
         "primaryMuscles": [
-          "calves"
+          "glutes"
         ],
-        "category": "lower legs",
-        "image": "https://raw.githubusercontent.com/hasaneyldrm/exercises-dataset/main/images/0417-dPmaUaU.jpg",
-        "gifUrl": "https://raw.githubusercontent.com/hasaneyldrm/exercises-dataset/main/videos/0417-dPmaUaU.gif",
+        "category": "upper legs",
+        "image": "https://raw.githubusercontent.com/hasaneyldrm/exercises-dataset/main/images/3013-u0cNiij.jpg",
+        "gifUrl": "https://raw.githubusercontent.com/hasaneyldrm/exercises-dataset/main/videos/3013-u0cNiij.gif",
         "attribution": "© Gym visual — https://gymvisual.com/"
       },
-      "series": 4,
+      "series": 2,
       "reps": 0,
-      "repsLabel": "AMRAP",
-      "notes": "Finisher: pantorrillas al fallo",
-      "workSeconds": 30,
+      "repsLabel": "Hold",
+      "notes": "Isometric finisher: squeeze at the top and hold.",
+      "workSeconds": 40,
       "restSeconds": 20,
+      "transitionSeconds": 0
+    },
+    {
+      "instanceId": "legs-iso-wall-sit",
+      "exercise": {
+        "id": "wall-sit",
+        "name": "Wall sit",
+        "equipment": "body weight",
+        "primaryMuscles": [
+          "quads"
+        ],
+        "category": "upper legs",
+        "image": "https://raw.githubusercontent.com/hasaneyldrm/exercises-dataset/main/images/1760-yn8yg1r.jpg",
+        "gifUrl": "https://raw.githubusercontent.com/hasaneyldrm/exercises-dataset/main/videos/1760-yn8yg1r.gif",
+        "attribution": "© Gym visual — https://gymvisual.com/"
+      },
+      "series": 2,
+      "reps": 0,
+      "repsLabel": "Hold",
+      "notes": "Isometric finisher: back on the wall, thighs parallel. Hold.",
+      "workSeconds": 30,
+      "restSeconds": 0,
       "transitionSeconds": 0
     }
   ]

@@ -19,12 +19,9 @@ WORKOUTS_DIR = Path(__file__).resolve().parents[1] / "public" / "workouts"
 PHRASES_DIR = Path(__file__).resolve().parent / "uploads" / "phrases"
 ALLOWED_AUDIO_EXT = {".mp3", ".wav", ".ogg", ".m4a", ".webm"}
 SEED_FILES = [
-    "lunes-push.json",
-    "martes-pull.json",
-    "miercoles-legs.json",
-    "jueves-push.json",
-    "viernes-pull.json",
-    "sabado-legs.json",
+    "push.json",
+    "pull.json",
+    "legs.json",
 ]
 PLANNED_SESSIONS_PER_WEEK = 6
 
@@ -97,6 +94,7 @@ def init_db() -> None:
     PHRASES_DIR.mkdir(parents=True, exist_ok=True)
     WORKOUTS_DIR.mkdir(parents=True, exist_ok=True)
     seed_default_workouts()
+    sync_workouts_from_json()
     backfill_workout_slugs()
     recover_orphan_phrase_files()
 
@@ -166,6 +164,16 @@ def delete_workout_json(slug: str | None) -> None:
         path.unlink()
 
 
+def load_workout_json(path: Path) -> tuple[str, str, dict[str, Any], list[dict[str, Any]], str]:
+    data = json.loads(path.read_text(encoding="utf-8"))
+    name = str(data.get("name") or path.stem)
+    settings = data.get("settings") or {}
+    exercises = data.get("exercises") or []
+    slug = path.stem
+    updated_at = str(data.get("savedAt") or datetime.now(timezone.utc).isoformat())
+    return name, slug, settings, exercises, updated_at
+
+
 def seed_default_workouts() -> None:
     with connect() as conn:
         count = conn.execute("SELECT COUNT(*) AS c FROM saved_workouts").fetchone()[
@@ -178,11 +186,7 @@ def seed_default_workouts() -> None:
             path = WORKOUTS_DIR / filename
             if not path.exists():
                 continue
-            data = json.loads(path.read_text(encoding="utf-8"))
-            name = str(data.get("name") or path.stem)
-            settings = data.get("settings") or {}
-            exercises = data.get("exercises") or []
-            slug = path.stem
+            name, slug, settings, exercises, updated_at = load_workout_json(path)
             conn.execute(
                 """
                 INSERT OR IGNORE INTO saved_workouts (
@@ -194,9 +198,53 @@ def seed_default_workouts() -> None:
                     slug,
                     json.dumps(settings),
                     json.dumps(exercises),
-                    datetime.now(timezone.utc).isoformat(),
+                    updated_at,
                 ),
             )
+        conn.commit()
+
+
+def sync_workouts_from_json() -> None:
+    """Keep Push/Pull/Legs in the DB aligned with public/workouts JSON."""
+    with connect() as conn:
+        for filename in SEED_FILES:
+            path = WORKOUTS_DIR / filename
+            if not path.exists():
+                continue
+            name, slug, settings, exercises, updated_at = load_workout_json(path)
+            existing = conn.execute(
+                """
+                SELECT id FROM saved_workouts
+                WHERE slug = ? OR name = ?
+                """,
+                (slug, name),
+            ).fetchone()
+            payload = (
+                name,
+                slug,
+                json.dumps(settings),
+                json.dumps(exercises),
+                updated_at,
+            )
+            if existing is None:
+                conn.execute(
+                    """
+                    INSERT INTO saved_workouts (
+                        name, slug, settings_json, exercises_json, updated_at
+                    ) VALUES (?, ?, ?, ?, ?)
+                    """,
+                    payload,
+                )
+            else:
+                conn.execute(
+                    """
+                    UPDATE saved_workouts
+                    SET name = ?, slug = ?, settings_json = ?,
+                        exercises_json = ?, updated_at = ?
+                    WHERE id = ?
+                    """,
+                    (*payload, existing["id"]),
+                )
         conn.commit()
 
 
