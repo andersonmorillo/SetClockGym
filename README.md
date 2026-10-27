@@ -63,6 +63,14 @@ Open `http://localhost:5173` (or your `VITE_PORT`). Press `Ctrl+C` to stop both.
 Double-click `start-gym-timer.bat`.  
 It reads `.env`, starts the API + app, and opens the local URL. A public HTTPS tunnel via ngrok starts only if `ngrok` is on `PATH` **and** `NGROK_DOMAIN` is set in `.env`.
 
+### Linux desktop
+
+```bash
+./start-gym-timer.sh
+```
+
+Installs a **Gym Timer** menu entry, starts the API and the app, and opens them in their own window. `./start-gym-timer.sh stop` closes that window and stops the servers this launcher started. If the default ports are already taken, it picks the next free ones.
+
 ### Frontend only
 
 ```bash

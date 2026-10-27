@@ -10,7 +10,8 @@
     "preview": "vite preview",
     "setup": "node scripts/dev.mjs setup",
     "dev:api": "node scripts/dev.mjs api",
-    "dev:all": "node scripts/dev.mjs all"
+    "dev:all": "node scripts/dev.mjs all",
+    "desktop": "bash start-gym-timer.sh"
   },
   "dependencies": {
     "react": "^19.2.7",

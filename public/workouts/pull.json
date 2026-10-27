@@ -1,9 +1,9 @@
 {
   "name": "Pull",
-  "savedAt": "2026-08-17T22:52:10.465Z",
+  "savedAt": "2026-10-27T22:30:00.000Z",
   "settings": {
     "workSeconds": 40,
-    "restSeconds": 20,
+    "restSeconds": 50,
     "rounds": 1,
     "includeUpperWarmUp": true,
     "includeLegWarmUp": false,
@@ -25,12 +25,12 @@
         "gifUrl": "https://raw.githubusercontent.com/hasaneyldrm/exercises-dataset/main/videos/0651-0V2YQjW.gif",
         "attribution": "© Gym visual — https://gymvisual.com/"
       },
-      "series": 3,
+      "series": 2,
       "reps": 6,
       "repsLabel": "8",
       "notes": "Commando pull-ups (closest match: neutral grip)",
       "workSeconds": 30,
-      "restSeconds": 20,
+      "restSeconds": 50,
       "transitionSeconds": 0
     },
     {
@@ -47,11 +47,11 @@
         "gifUrl": "https://raw.githubusercontent.com/hasaneyldrm/exercises-dataset/main/videos/1429-Qqi7bko.gif",
         "attribution": "© Gym visual — https://gymvisual.com/"
       },
-      "series": 3,
+      "series": 2,
       "reps": 5,
       "repsLabel": "8",
       "workSeconds": 30,
-      "restSeconds": 20,
+      "restSeconds": 50,
       "transitionSeconds": 0
     },
     {
@@ -68,11 +68,11 @@
         "gifUrl": "https://raw.githubusercontent.com/hasaneyldrm/exercises-dataset/main/videos/1326-T2mxWqc.gif",
         "attribution": "© Gym visual — https://gymvisual.com/"
       },
-      "series": 4,
+      "series": 2,
       "reps": 6,
       "repsLabel": "6-10",
       "workSeconds": 30,
-      "restSeconds": 20,
+      "restSeconds": 50,
       "transitionSeconds": 0
     },
     {
@@ -89,11 +89,11 @@
         "gifUrl": "https://raw.githubusercontent.com/hasaneyldrm/exercises-dataset/main/videos/0499-bZGHsAZ.gif",
         "attribution": "© Gym visual — https://gymvisual.com/"
       },
-      "series": 4,
+      "series": 3,
       "reps": 8,
       "repsLabel": "12",
       "workSeconds": 40,
-      "restSeconds": 20,
+      "restSeconds": 50,
       "transitionSeconds": 0
     },
     {
@@ -110,11 +110,11 @@
         "gifUrl": "https://raw.githubusercontent.com/hasaneyldrm/exercises-dataset/main/videos/0472-I3tsCnC.gif",
         "attribution": "© Gym visual — https://gymvisual.com/"
       },
-      "series": 3,
+      "series": 2,
       "reps": 12,
       "repsLabel": "12",
       "workSeconds": 40,
-      "restSeconds": 20,
+      "restSeconds": 50,
       "transitionSeconds": 0
     },
     {
@@ -131,12 +131,12 @@
         "gifUrl": "https://raw.githubusercontent.com/hasaneyldrm/exercises-dataset/main/videos/3419-UpWmA5E.gif",
         "attribution": "© Gym visual — https://gymvisual.com/"
       },
-      "series": 3,
+      "series": 2,
       "reps": 0,
       "repsLabel": "Hold",
       "notes": "Isometric finisher: legs straight, hips locked. Scale with tucked knees.",
       "workSeconds": 30,
-      "restSeconds": 10,
+      "restSeconds": 50,
       "transitionSeconds": 0
     },
     {
@@ -153,12 +153,12 @@
         "gifUrl": "https://raw.githubusercontent.com/hasaneyldrm/exercises-dataset/main/videos/0472-I3tsCnC.gif",
         "attribution": "© Gym visual — https://gymvisual.com/"
       },
-      "series": 3,
+      "series": 2,
       "reps": 0,
       "repsLabel": "Hold",
       "notes": "Isometric finisher: dead hang. Last set to failure.",
-      "workSeconds": 40,
-      "restSeconds": 20,
+      "workSeconds": 30,
+      "restSeconds": 50,
       "transitionSeconds": 0
     }
   ]
